@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: myapp
+  name: myapp
+spec:
+  containers:
+  - image: myapp:1.0 # Note: using `:latest` causes `kind` to always try pulling (and failing) from dockerhub.com
+    name: myapp
+    ports:
+    - containerPort: 5000
+    args: ["python3", "/opt/myapp/app.py"]
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+
