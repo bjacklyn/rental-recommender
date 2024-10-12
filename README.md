@@ -47,11 +47,42 @@ Fixup the HostAliases ip for the nginx ingress controller.
 ```
 kubectl get svc -A
 
-# Find the ip address of ingress-nginx-controller (NodePort). Copy this ip address.
+# E.g.
+ingress-nginx   ingress-nginx-controller             NodePort    10.96.93.100   <none>        80:30119/TCP,443:32280/TCP   45m
+
+# Grab the ip address of ingress-nginx-controller (NodePort): 10.96.93.100 in this case.
 # Manually update oauth-proxy/oauth-proxy-pod.yaml and myapp/myapp-pod.yaml with this ip address.
 
 # This shouldn't be necessary once everything is deployed in cloud because we will have an actual real DNS.
 # It is a problem locally because the DNS is routed to `localhost` which is not the nginx-ingress-controller.
+
+# Example of the change needed:
+diff --git myapp/myapp-pod.yaml myapp/myapp-pod.yaml
+index edca0c5..1efb965 100644
+--- myapp/myapp-pod.yaml
++++ myapp/myapp-pod.yaml
+@@ -6,7 +6,7 @@ metadata:
+   name: myapp
+ spec:
+   hostAliases:
+-  - ip: "10.96.173.176"
++  - ip: "10.96.93.100"
+     hostnames:
+       - "houseproject.internal"
+   containers:
+diff --git oauth-proxy/oauth-proxy-pod.yaml oauth-proxy/oauth-proxy-pod.yaml
+index 3d7f567..5f4c09d 100644
+--- oauth-proxy/oauth-proxy-pod.yaml
++++ oauth-proxy/oauth-proxy-pod.yaml
+@@ -6,7 +6,7 @@ metadata:
+   name: oauth-proxy
+ spec:
+   hostAliases:
+-  - ip: "10.96.173.176"
++  - ip: "10.96.93.100"
+     hostnames:
+       - "houseproject.internal"
+   volumes:
 ```
 
 
