@@ -5,6 +5,10 @@ metadata:
     app: myapp
   name: myapp
 spec:
+  hostAliases:
+  - ip: "10.96.173.176"
+    hostnames:
+      - "houseproject.internal"
   containers:
   - image: myapp:1.0 # Note: using `:latest` causes `kind` to always try pulling (and failing) from dockerhub.com
     name: myapp

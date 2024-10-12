@@ -5,8 +5,10 @@ metadata:
   annotations:
     spec.ingressClassName: nginx
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 512k
 spec:
   rules:
+#    - host: houseproject.internal
     - http:
         paths:
           - path: /keycloak(/|$)(.*)

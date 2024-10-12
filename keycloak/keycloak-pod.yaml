@@ -23,6 +23,6 @@ spec:
     name: keycloak
     ports:
     - containerPort: 8080
-    args: ["start-dev", "--hostname", "http://localhost:80/keycloak"]
+    args: ["start-dev", "--hostname", "http://houseproject.internal/keycloak"]
   dnsPolicy: ClusterFirst
   restartPolicy: Always

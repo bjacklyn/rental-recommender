@@ -1,0 +1,41 @@
+apiVersion: v1
+data:
+  oauth2-proxy.cfg: |-
+    # Provider config
+    provider="keycloak-oidc"
+    provider_display_name="Keycloak"
+    # login_url="http://keycloak.default.svc.cluster.local:8080/realms/houseproject/protocol/openid-connect/auth"
+    # redeem_url="http://keycloak.default.svc.cluster.local:8080/realms/houseproject/protocol/openid-connect/token"
+    # validate_url="http://keycloak.default.svc.cluster.local:8080/realms/houseproject/protocol/openid-connect/userinfo"
+    # profile_url="http://keycloak.default.svc.cluster.local:8080/realms/houseproject/protocol/openid-connect/userinfo"
+    ssl_insecure_skip_verify=true
+    insecure_oidc_skip_issuer_verification=true
+    insecure_oidc_allow_unverified_email=true
+    # Client config
+    client_id="oauth-proxy-client"
+    client_secret="KmyqCo9TuczActT9HI09HpJ30Ruw4JsN"
+    cookie_secret="ZzBkN000Wm0pQkVkKUhzMk5YPntQRUw_ME1oMTZZTy0="
+    cookie_secure="false"
+    # Upstream config
+    http_address="0.0.0.0:4180"
+    upstreams="file:///dev/null"
+    email_domains=["*"]
+    oidc_issuer_url="http://houseproject.internal/keycloak/realms/houseproject"
+    oidc-extra-audience="oauth-proxy-client"
+    scope="openid"
+    # pass-authorization-header=true
+    # pass-access-token=true
+    # pass-user-headers=true
+    # set-authorization-header=true
+    # set-xauthrequest=true
+    # cookie-refresh="1m"
+    # cookie-expire="30m"
+    # code-challenge-method="S256"
+    # cookie_domains=["localhost"]
+    # whitelist_domains=[".localhost:*"]
+    # Redis session store config
+    # session_store_type="redis"
+    # redis_connection_url="redis://<RedisServiceName>:6379"
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-config
