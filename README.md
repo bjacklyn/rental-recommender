@@ -1,1 +1,105 @@
 # houseproject
+
+## Setup Instructions
+
+1. Create kind cluster with nginx ingress support
+```
+cat <<EOF | kind create cluster --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 80
+    protocol: TCP
+  - containerPort: 443
+    hostPort: 443
+    protocol: TCP
+EOF
+```
+
+2. Install nginx ingress
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+# (Optional) Wait for nginx ingress to be ready:
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=180s
+```
+
+3. Local development only:
+
+Manually add this entry to bottom of /etc/hosts file.
+```
+127.0.0.1 houseproject.internal
+```
+
+Fixup the HostAliases ip for the nginx ingress controller.
+```
+kubectl get svc -A
+
+# Find the ip address of ingress-nginx-controller (NodePort). Copy this ip address.
+# Manually update oauth-proxy/oauth-proxy-pod.yaml and myapp/myapp-pod.yaml with this ip address.
+
+# This shouldn't be necessary once everything is deployed in cloud because we will have an actual real DNS.
+# It is a problem locally because the DNS is routed to `localhost` which is not the nginx-ingress-controller.
+```
+
+
+4. Build custom docker images and load them into kind cluster
+```
+# NOTE: we cannot use `:latest` tag because kubernetes will always try to pull it from public dockerhub,
+# and these don't exist there
+cd keycloak-postgres; docker build --tag keycloak-postgres:1.0 .
+cd myapp; docker build --tag myapp:1.0 .
+
+kind load docker-image keycloak-postgres:1.0
+kind load docker-image myapp:1.0
+```
+
+5. Start keycloak-postgres db & keycloak application
+```
+kubectl apply -f keycloak-postgres/postgres-pod.yaml
+kubectl apply -f keycloak-postgres/postgres-service.yaml
+
+# NOTE: Before starting keycloak application, wait 20 seconds or check that postgresdb is initialized: `kubectl logs keycloak-postgres`
+kubectl apply -f keycloak/keycloak-pod.yaml
+kubectl apply -f keycloak/keycloak-service.yaml
+kubectl apply -f keycloak/keycloak-ingress.yaml
+
+# Confirm that keycloak application came up without database connection errors: `kubectl logs keycloak`
+# Keycloak can take 60s to initialize
+```
+
+6. Start oauth-proxy
+```
+kubectl apply -f oauth-proxy/oauth-proxy-configmap.yaml
+kubectl apply -f oauth-proxy/oauth-proxy-pod.yaml
+kubectl apply -f oauth-proxy/oauth-proxy-service.yaml
+kubectl apply -f oauth-proxy/oauth-proxy-ingress.yaml
+
+# Confirm that oauth-proxy initializes correctly. It tries to authenticate with keycloak on the 'well-known' endpoint.
+# You should see something like `OAuthProxy configured for Keycloak OIDC Client ID: oauth-proxy-client` inside `kubectl logs oauth-proxy`
+```
+
+7. Start myapp
+```
+kubectl apply -f myapp/myapp-pod.yaml
+kubectl apply -f myapp/myapp-service.yaml
+kubectl apply -f myapp/myapp-ingress.yaml
+
+# This app is protected by keycloak authentication (see the ingress annotations).
+# Going to http://houseproject.internal/myapp should redirect you automatically to keycloak to sign-in/register.
+# Once signed-in you should be redirected back to myapp.
+
+# NOTE: There is a user with credentials (username: foo, password: bar), but do confirm that the sign-up flow works.
+```
