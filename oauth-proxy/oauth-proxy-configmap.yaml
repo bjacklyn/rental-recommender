@@ -21,7 +21,6 @@ data:
     upstreams="file:///dev/null"
     email_domains=["*"]
     oidc_issuer_url="http://houseproject.internal/keycloak/realms/houseproject"
-    oidc-extra-audience="oauth-proxy-client"
     scope="openid"
     # pass-authorization-header=true
     # pass-access-token=true

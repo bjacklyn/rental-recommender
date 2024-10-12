@@ -13,7 +13,7 @@ spec:
       value: admin
     - name: POSTGRES_DB
       value: keycloakdb
-    image: keycloak-postgres:17.0
+    image: keycloak-postgres:1.0
     name: keycloak-postgres
     ports:
     - containerPort: 5432
