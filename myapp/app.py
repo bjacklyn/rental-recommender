@@ -2,7 +2,9 @@ from flask import Flask, jsonify, render_template, Blueprint
 from flask_restx import Api, Resource, Swagger
 from flask_restx.apidoc import apidoc
 
+import json
 import logging
+import os
 
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -55,11 +57,43 @@ trace.get_tracer_provider().add_span_processor(span_processor)
 
 # Instrument the Flask app
 FlaskInstrumentor().instrument_app(app)
-LoggingInstrumentor().instrument(set_logging_format=True)
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        log_obj = {
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "trace_id": record.trace_id,
+            "span_id": record.span_id,
+            "file": os.path.basename(record.pathname) + ":" + str(record.lineno),
+        }
+        return json.dumps(log_obj)
+
+class TraceAwareLoggingHandler(logging.StreamHandler):
+    def emit(self, record):
+        span = trace.get_current_span()
+        if span and span.get_span_context().is_valid:
+            record.trace_id = span.get_span_context().trace_id
+            record.span_id = span.get_span_context().span_id
+        else:
+            record.trace_id = None
+            record.span_id = None
+        super().emit(record)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Create a stream handler with the JSON formatter
+handler = TraceAwareLoggingHandler()
+handler.setFormatter(JsonFormatter())
+
+# Suppress default logging output
+logging.getLogger().handlers.clear()
+
+# Set our json handler as the global default
+logging.getLogger().addHandler(handler)
 
 @api.route('/api/hello')
 class HelloWorld(Resource):
