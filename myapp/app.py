@@ -2,7 +2,12 @@ from flask import Flask, jsonify, render_template, Blueprint
 from flask_restx import Api, Resource, Swagger
 from flask_restx.apidoc import apidoc
 
-#apidoc.static_url_path = "/myapp/swaggerui"
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import Resource as OpenTelemetryResource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 @apidoc.add_app_template_global
 def swagger_static(filename):
@@ -11,6 +16,7 @@ def swagger_static(filename):
 app = Flask(__name__)
 api = Api(app, doc='/swagger')
 
+# Setup the swagger endpoints
 @api.route('/custom-swagger.json')
 class CustomSwaggerJson(Resource):
     def get(self):
@@ -24,11 +30,35 @@ class CustomSwaggerJson(Resource):
 def custom_ui():
     return render_template("swagger-ui.html", title=api.title, specs_url="/myapp/custom-swagger.json")
 
+# Resource can be required for some backends, e.g. Jaeger
+# If resource wouldn't be set - traces wouldn't appears in Jaeger
+resource = OpenTelemetryResource(attributes={
+    "service.name": "myapp"
+})
+
+# Set up OpenTelemetry tracing
+trace.set_tracer_provider(TracerProvider(resource=resource))
+tracer = trace.get_tracer(__name__)
+
+# Configure the OTLP exporter
+otlp_exporter = OTLPSpanExporter(
+    endpoint='jaeger:4317',  # Adjust the endpoint to your Jaeger setup
+    insecure=True,  # Use `True` if your Jaeger instance doesn't use TLS
+)
+
+# Set up a BatchSpanProcessor to export spans
+span_processor = BatchSpanProcessor(otlp_exporter)
+trace.get_tracer_provider().add_span_processor(span_processor)
+
+# Instrument the Flask app
+FlaskInstrumentor().instrument_app(app)
+
 @api.route('/api/hello')
 class HelloWorld(Resource):
     def get(self):
         """Returns a hello world message"""
-        return jsonify({"message": "Hello, World!"})
+        with tracer.start_as_current_span("hello_world_trace"):
+            return jsonify({"message": "Hello, World!"})
 
 if __name__ == '__main__':
     print(app.url_map)

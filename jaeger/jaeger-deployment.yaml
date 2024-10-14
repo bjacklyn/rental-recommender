@@ -18,13 +18,14 @@ spec:
         - name: jaeger
           image: jaegertracing/all-in-one:1.62.0
           ports:
-            - containerPort: 5775
-            - containerPort: 6831
-            - containerPort: 6832
-            - containerPort: 5778
-            - containerPort: 14250
-            - containerPort: 14268
-            - containerPort: 16686
+            - containerPort: 4317  # OTLP gRPC
+            - containerPort: 5775  # Thrift UDP
+            - containerPort: 6831  # Thrift UDP
+            - containerPort: 6832  # Thrift UDP
+            - containerPort: 5778  # HTTP for health checks
+            - containerPort: 14250  # gRPC
+            - containerPort: 14268  # HTTP for spans
+            - containerPort: 16686  # HTTP for the UI
           env:
             - name: COLLECTOR_ZIPKIN_HTTP_PORT
               value: "9411"
