@@ -6,8 +6,8 @@ RUN python3 -m pip install \
   opentelemetry-api \
   opentelemetry-sdk \
   opentelemetry-instrumentation-flask \
+  opentelemetry-instrumentation-logging \
   opentelemetry-exporter-otlp
-#  opentelemetry-exporter-jaeger
 
 RUN mkdir /opt/myapp
 COPY app.py /opt/myapp/app.py
