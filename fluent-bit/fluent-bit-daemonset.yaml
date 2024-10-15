@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluent-bit
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: fluent-bit
+  template:
+    metadata:
+      labels:
+        name: fluent-bit
+    spec:
+      containers:
+      - name: fluent-bit
+        image: fluent/fluent-bit:latest-debug
+        volumeMounts:
+          - name: varlogpods
+            mountPath: /var/log/pods
+          - name: config
+            mountPath: /fluent-bit/etc/fluent-bit.conf
+            subPath: fluent-bit.conf
+        securityContext:
+          runAsNonRoot: false
+          runAsUser: 0
+          seLinuxOptions:
+            type: spc_t
+#          - name: parsers
+#            mountPath: /fluent-bit/etc/parsers.conf
+#            subPath: parsers.conf
+      volumes:
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: config
+          configMap:
+            name: fluent-bit-config
+#        - name: parsers
+#          configMap:
+#            name: fluent-bit-config

@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: kube-system
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        # Flush
+        # =====
+        # set an interval of seconds before to flush records to a destination
+        flush        1
+
+        # Daemon
+        # ======
+        # instruct Fluent Bit to run in foreground or background mode.
+        daemon       Off
+
+        # Log_Level
+        # =========
+        # Set the verbosity level of the service, values can be:
+        #
+        # - error
+        # - warning
+        # - info
+        # - debug
+        # - trace
+        #
+        # by default 'info' is set, that means it includes 'error' and 'warning'.
+        log_level    info
+
+        # Parsers File
+        # ============
+        # specify an optional 'Parsers' configuration file
+        parsers_file parsers.conf
+
+        # Plugins File
+        # ============
+        # specify an optional 'Plugins' configuration file to load external plugins.
+        plugins_file plugins.conf
+
+        # HTTP Server
+        # ===========
+        # Enable/Disable the built-in HTTP Server for metrics
+        http_server  Off
+        http_listen  0.0.0.0
+        http_port    2020
+
+    [Input]
+        Name          tail
+        Path          /var/log/pods/*/*/*.log
+        Exclude_Path  /var/log/pods/*fluent*
+        Parser        docker
+        Tag           kubernetes.*
+        Refresh_Interval 5
+
+    [Output]
+        Name          stdout
+        Match         *
+
+  parsers.conf: |
+    [PARSER]
+        Name   docker
+        Format json
+        Time_Key time
+        Time_Format %Y-%m-%dT%H:%M:%S.%LZ
+        Time_Keep On
+        Decode_Field  log
