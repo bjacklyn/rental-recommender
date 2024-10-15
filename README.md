@@ -128,7 +128,16 @@ kubectl apply -f oauth-proxy/oauth-proxy-ingress.yaml
 # You should see something like `OAuthProxy configured for Keycloak OIDC Client ID: oauth-proxy-client` inside `kubectl logs oauth-proxy`
 ```
 
-7. Start myapp
+7. Start jaeger
+```
+kubectl apply -f jaeger/jaeger-deployment.yaml
+kubectl apply -f jaeger/jaeger-service.yaml
+kubectl apply -f jaeger/jaeger-ingress.yaml
+
+# Confirm that http://.../jaeger works
+```
+
+8. Start myapp
 ```
 kubectl apply -f myapp/myapp-pod.yaml
 kubectl apply -f myapp/myapp-service.yaml
@@ -139,4 +148,10 @@ kubectl apply -f myapp/myapp-ingress.yaml
 # Once signed-in you should be redirected back to myapp.
 
 # NOTE: There is a user with credentials (username: foo, password: bar), but do confirm that the sign-up flow works.
+```
+
+9. Start fluent-bit
+```
+kubectl apply -f fluent-bit/fluent-bit-configmap.yaml
+kubectl apply -f fluent-bit/fluent-bit-daemonset.yaml
 ```
