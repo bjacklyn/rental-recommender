@@ -22,6 +22,12 @@ nodes:
   - containerPort: 443
     hostPort: 443
     protocol: TCP
+  extraMounts:
+  - hostPath: /var/log/pods
+    containerPath: /var/log/pods
+    readOnly: false
+    selinuxRelabel: false
+    propagation: Bidirectional
 EOF
 ```
 
@@ -90,8 +96,8 @@ index 3d7f567..5f4c09d 100644
 ```
 # NOTE: we cannot use `:latest` tag because kubernetes will always try to pull it from public dockerhub,
 # and these don't exist there
-cd keycloak-postgres; docker build --tag keycloak-postgres:1.0 .
-cd myapp; docker build --tag myapp:1.0 .
+docker build --tag keycloak-postgres:1.0 keycloak-postgres
+docker build --tag myapp:1.0 myapp
 
 kind load docker-image keycloak-postgres:1.0
 kind load docker-image myapp:1.0
