@@ -150,7 +150,13 @@ kubectl apply -f myapp/myapp-ingress.yaml
 # NOTE: There is a user with credentials (username: foo, password: bar), but do confirm that the sign-up flow works.
 ```
 
-9. Start fluent-bit
+9. Start elasticsearch
+```
+kubectl apply -f elasticsearch/elasticsearch-configmap.yaml
+kubectl apply -f elasticsearch/elasticsearch-deployment.yaml
+```
+
+10. Start fluent-bit
 ```
 kubectl apply -f fluent-bit/fluent-bit-configmap.yaml
 kubectl apply -f fluent-bit/fluent-bit-daemonset.yaml

@@ -55,8 +55,14 @@ data:
         Refresh_Interval 5
 
     [Output]
-        Name          stdout
-        Match         *
+        Name            es
+        Match           *
+        Host            elasticsearch.default.svc.cluster.local
+        Port            9200
+        Index           fluentbit
+        Type            _doc
+        Logstash_Format On
+        Suppress_Type_Name On
 
   parsers.conf: |
     [PARSER]

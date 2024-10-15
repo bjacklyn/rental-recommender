@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: elasticsearch:8.15.2
+        env:
+        - name: discovery.type
+          value: single-node
+        ports:
+        - containerPort: 9200
+        volumeMounts:
+        - name: es-data
+          mountPath: /usr/share/elasticsearch/data
+        - name: es-config
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          subPath: elasticsearch.yml
+      volumes:
+      - name: es-data
+        emptyDir: {}
+      - name: es-config
+        configMap:
+          name: elasticsearch-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+spec:
+  ports:
+  - port: 9200
+    targetPort: 9200
+  selector:
+    app: elasticsearch
