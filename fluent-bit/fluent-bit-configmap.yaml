@@ -49,7 +49,7 @@ data:
     [Input]
         Name          tail
         Path          /var/log/pods/*/*/*.log
-        Exclude_Path  /var/log/pods/*fluent*
+        Exclude_Path  /var/log/pods/*fluent*, /var/log/pods/*elasticsearch*, /var/log/pods/*kibana*
         Parser        docker
         Tag           kubernetes.*
         Refresh_Interval 5
