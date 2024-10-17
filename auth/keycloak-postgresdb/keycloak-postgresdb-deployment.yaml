@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-postgresdb
+  namespace: auth
+spec:
+  selector:
+    app: keycloak-postgresdb
+  ports:
+  - port: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-postgresdb
+  namespace: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak-postgresdb
+  template:
+    metadata:
+      labels:
+        app: keycloak-postgresdb
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_USER
+          value: admin
+        - name: POSTGRES_PASSWORD
+          value: admin
+        - name: POSTGRES_DB
+          value: keycloakdb
+        image: keycloak-postgresdb:1.0
+        name: keycloak-postgresdb
+        ports:
+        - containerPort: 5432

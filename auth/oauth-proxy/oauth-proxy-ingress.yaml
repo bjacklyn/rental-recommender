@@ -1,9 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: oauth2-proxy
+  name: oauth-proxy
   annotations:
     nginx.ingress.kubernetes.io/proxy-buffer-size: 512k
+  namespace: auth
 spec:
   ingressClassName: nginx
   rules:
