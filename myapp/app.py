@@ -74,8 +74,8 @@ class TraceAwareLoggingHandler(logging.StreamHandler):
     def emit(self, record):
         span = trace.get_current_span()
         if span and span.get_span_context().is_valid:
-            record.trace_id = span.get_span_context().trace_id
-            record.span_id = span.get_span_context().span_id
+            record.trace_id = hex(span.get_span_context().trace_id)[2:]
+            record.span_id = hex(span.get_span_context().span_id)[2:]
         else:
             record.trace_id = None
             record.span_id = None
