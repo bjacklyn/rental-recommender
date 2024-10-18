@@ -34,7 +34,7 @@ EOF
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
 # Wait for nginx ingress to be ready:
-sleep 2
+sleep 1
 kubectl wait --namespace ingress-nginx \
   --for=condition=ready pod \
   --selector=app.kubernetes.io/component=controller \
@@ -57,7 +57,7 @@ kind load docker-image keycloak-postgresdb:1.0
 
 # Start the keycloak database
 kubectl apply -f auth/keycloak-postgresdb/keycloak-postgresdb-deployment.yaml
-sleep 2
+sleep 1
 kubectl wait --namespace auth \
   --for=condition=ready pod \
   --selector=app=keycloak-postgresdb \
@@ -66,7 +66,7 @@ kubectl wait --namespace auth \
 # Start the keycloak application
 kubectl apply -f auth/keycloak/keycloak-deployment.yaml
 kubectl apply -f auth/keycloak/keycloak-ingress.yaml
-sleep 2
+sleep 1
 kubectl wait --namespace auth \
   --for=condition=ready pod \
   --selector=app=keycloak \
@@ -76,6 +76,7 @@ kubectl wait --namespace auth \
 kubectl apply -f auth/oauth-proxy/oauth-proxy-configmap.yaml
 kubectl apply -f auth/oauth-proxy/oauth-proxy-deployment.yaml
 kubectl apply -f auth/oauth-proxy/oauth-proxy-ingress.yaml
+sleep 1
 kubectl wait --namespace auth \
   --for=condition=ready pod \
   --selector=app=oauth-proxy \
@@ -87,7 +88,36 @@ kubectl wait --namespace auth \
 kubectl apply -f tracing/tracing-namespace.yaml
 kubectl apply -f tracing/jaeger/jaeger-deployment.yaml
 kubectl apply -f tracing/jaeger/jaeger-ingress.yaml
+sleep 1
 kubectl wait --namespace tracing \
   --for=condition=ready pod \
   --selector=app=jaeger \
+  --timeout=90s
+
+
+# 4. Logging
+# ================================================================================================
+kubectl apply -f logging/logging-namespace.yaml
+
+# Start elasticsearch
+kubectl apply -f logging/elasticsearch/elasticsearch-configmap.yaml
+kubectl apply -f logging/elasticsearch/elasticsearch-deployment.yaml
+sleep 1
+kubectl wait --namespace logging \
+  --for=condition=ready pod \
+  --selector=app=elasticsearch \
+  --timeout=90s
+
+# Start fluent-bit
+kubectl apply -f logging/fluent-bit/fluent-bit-configmap.yaml
+kubectl apply -f logging/fluent-bit/fluent-bit-daemonset.yaml
+
+# Start kibana
+kubectl apply -f logging/kibana/kibana-configmap.yaml
+kubectl apply -f logging/kibana/kibana-deployment.yaml
+kubectl apply -f logging/kibana/kibana-ingress.yaml
+sleep 1
+kubectl wait --namespace logging \
+  --for=condition=ready pod \
+  --selector=app=kibana \
   --timeout=90s
