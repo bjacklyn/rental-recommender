@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 # 1. Install the kubernetes control plane with `kind`
-# ===================================================
+# ================================================================================================
 cat <<EOF | kind create cluster --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -30,7 +30,7 @@ EOF
 
 
 # 2. Nginx ingress
-# ================
+# ================================================================================================
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
 # Wait for nginx ingress to be ready:
@@ -42,12 +42,13 @@ kubectl wait --namespace ingress-nginx \
 
 
 # 3. Metrics-server for `kubectl top <pods/nodes>` metrics
-# ========================================================
+
+# ================================================================================================
 kubectl apply -f metrics-server/metrics-server-deployment.yaml
 
 
 # 4. Authentication
-# =================
+# ================================================================================================
 kubectl apply -f auth/auth-namespace.yaml
 
 # First build the keycloak database docker image with database auto-init scripts
@@ -78,4 +79,15 @@ kubectl apply -f auth/oauth-proxy/oauth-proxy-ingress.yaml
 kubectl wait --namespace auth \
   --for=condition=ready pod \
   --selector=app=oauth-proxy \
+  --timeout=90s
+
+
+# 4. Tracing
+# ================================================================================================
+kubectl apply -f tracing/tracing-namespace.yaml
+kubectl apply -f tracing/jaeger/jaeger-deployment.yaml
+kubectl apply -f tracing/jaeger/jaeger-ingress.yaml
+kubectl wait --namespace tracing \
+  --for=condition=ready pod \
+  --selector=app=jaeger \
   --timeout=90s
