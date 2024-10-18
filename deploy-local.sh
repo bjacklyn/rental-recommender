@@ -42,6 +42,8 @@ kubectl wait --namespace ingress-nginx \
   --selector=app.kubernetes.io/component=controller \
   --timeout=180s
 
+kubectl get svc -A
+#sleep 30
 
 # 3. Authentication
 # ================================================================================================
@@ -134,6 +136,9 @@ kubectl apply -f monitoring/metrics-server/metrics-server-deployment.yaml
 kubectl apply -f monitoring/node-exporter/node-exporter-daemonset.yaml
 
 # Start prometheus (for grafana)
+kubectl apply -f monitoring/prometheus/prometheus-service-account.yaml
+kubectl apply -f monitoring/prometheus/prometheus-cluster-role.yaml
+kubectl apply -f monitoring/prometheus/prometheus-cluster-role-binding.yaml
 kubectl apply -f monitoring/prometheus/prometheus-configmap.yaml
 kubectl apply -f monitoring/prometheus/prometheus-deployment.yaml
 kubectl apply -f monitoring/prometheus/prometheus-ingress.yaml
@@ -144,6 +149,9 @@ kubectl wait --namespace monitoring \
   --timeout=90s
 
 # Start grafana
+docker build --tag grafana-init-container:1.0 monitoring/grafana
+kind load docker-image grafana-init-container:1.0
+
 kubectl apply -f monitoring/grafana/grafana-configmap.yaml
 kubectl apply -f monitoring/grafana/grafana-deployment.yaml
 kubectl apply -f monitoring/grafana/grafana-ingress.yaml
