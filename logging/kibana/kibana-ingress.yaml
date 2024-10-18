@@ -5,6 +5,7 @@ metadata:
   annotations:
     spec.ingressClassName: nginx
     nginx.ingress.kubernetes.io/proxy-buffer-size: 512k
+  namespace: logging
 spec:
   rules:
 #    - host: houseproject.internal

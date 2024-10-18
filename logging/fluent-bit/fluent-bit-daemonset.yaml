@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: fluent-bit
-  namespace: kube-system
+  namespace: logging
 spec:
   selector:
     matchLabels:
@@ -26,9 +26,6 @@ spec:
           runAsUser: 0
           seLinuxOptions:
             type: spc_t
-#          - name: parsers
-#            mountPath: /fluent-bit/etc/parsers.conf
-#            subPath: parsers.conf
       volumes:
         - name: varlogpods
           hostPath:
@@ -36,6 +33,3 @@ spec:
         - name: config
           configMap:
             name: fluent-bit-config
-#        - name: parsers
-#          configMap:
-#            name: fluent-bit-config

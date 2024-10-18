@@ -1,7 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: logging
+spec:
+  ports:
+  - port: 9200
+    targetPort: 9200
+  selector:
+    app: elasticsearch
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: elasticsearch
+  namespace: logging
 spec:
   replicas: 1
   selector:
@@ -32,14 +45,3 @@ spec:
       - name: es-config
         configMap:
           name: elasticsearch-config
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: elasticsearch
-spec:
-  ports:
-  - port: 9200
-    targetPort: 9200
-  selector:
-    app: elasticsearch
