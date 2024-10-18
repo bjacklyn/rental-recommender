@@ -2,6 +2,7 @@
 
 # 1. Install the kubernetes control plane with `kind`
 # ================================================================================================
+# ================================================================================================
 cat <<EOF | kind create cluster --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -31,6 +32,7 @@ EOF
 
 # 2. Nginx ingress
 # ================================================================================================
+# ================================================================================================
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
 # Wait for nginx ingress to be ready:
@@ -41,13 +43,8 @@ kubectl wait --namespace ingress-nginx \
   --timeout=180s
 
 
-# 3. Metrics-server for `kubectl top <pods/nodes>` metrics
-
+# 3. Authentication
 # ================================================================================================
-kubectl apply -f metrics-server/metrics-server-deployment.yaml
-
-
-# 4. Authentication
 # ================================================================================================
 kubectl apply -f auth/auth-namespace.yaml
 
@@ -85,6 +82,7 @@ kubectl wait --namespace auth \
 
 # 4. Tracing
 # ================================================================================================
+# ================================================================================================
 kubectl apply -f tracing/tracing-namespace.yaml
 kubectl apply -f tracing/jaeger/jaeger-deployment.yaml
 kubectl apply -f tracing/jaeger/jaeger-ingress.yaml
@@ -95,11 +93,12 @@ kubectl wait --namespace tracing \
   --timeout=90s
 
 
-# 4. Logging
+# 5. Logging
+# ================================================================================================
 # ================================================================================================
 kubectl apply -f logging/logging-namespace.yaml
 
-# Start elasticsearch
+# Start elasticsearch (for fluent-bit & kibana)
 kubectl apply -f logging/elasticsearch/elasticsearch-configmap.yaml
 kubectl apply -f logging/elasticsearch/elasticsearch-deployment.yaml
 sleep 1
@@ -120,4 +119,36 @@ sleep 1
 kubectl wait --namespace logging \
   --for=condition=ready pod \
   --selector=app=kibana \
+  --timeout=90s
+
+
+# 6. Monitoring
+# ================================================================================================
+# ================================================================================================
+kubectl apply -f monitoring/monitoring-namespace.yaml
+
+# Start metrics-server (for `kubectl top <pods/nodes>` metrics)
+kubectl apply -f monitoring/metrics-server/metrics-server-deployment.yaml
+
+# Start node-exporter (for prometheus)
+kubectl apply -f monitoring/node-exporter/node-exporter-daemonset.yaml
+
+# Start prometheus (for grafana)
+kubectl apply -f monitoring/prometheus/prometheus-configmap.yaml
+kubectl apply -f monitoring/prometheus/prometheus-deployment.yaml
+kubectl apply -f monitoring/prometheus/prometheus-ingress.yaml
+sleep 1
+kubectl wait --namespace monitoring \
+  --for=condition=ready pod \
+  --selector=app=prometheus \
+  --timeout=90s
+
+# Start grafana
+kubectl apply -f monitoring/grafana/grafana-configmap.yaml
+kubectl apply -f monitoring/grafana/grafana-deployment.yaml
+kubectl apply -f monitoring/grafana/grafana-ingress.yaml
+sleep 1
+kubectl wait --namespace monitoring \
+  --for=condition=ready pod \
+  --selector=app=grafana \
   --timeout=90s
