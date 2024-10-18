@@ -4,6 +4,7 @@ metadata:
   name: jaeger-ingress
   annotations:
     spec.ingressClassName: nginx
+  namespace: tracing
 spec:
   rules:
     - http:
