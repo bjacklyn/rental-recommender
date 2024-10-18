@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: grafana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      initContainers:
+        - name: init-dashboards
+          image: grafana-init-container:1.0
+          command: ['sh', '-c', 'cp /dashboards/* /mnt/dashboards/ && cp /dashboards.yaml /mnt/dashboards/;']
+          volumeMounts:
+            - name: grafana-dashboards
+              mountPath: /mnt/dashboards
+            - name: grafana-datasources
+              mountPath: /dashboards.yaml
+              subPath: dashboards.yaml
+      containers:
+        - name: grafana
+          image: grafana/grafana:9.2.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "admin"
+            - name: GF_SERVER_ROOT_URL
+              value: "/grafana"
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+          volumeMounts:
+            - name: grafana-datasources
+              mountPath: /etc/grafana/provisioning/datasources/datasources.yaml
+              subPath: datasources.yaml
+            - name: grafana-dashboards
+              mountPath: /etc/grafana/provisioning/dashboards
+      volumes:
+        - name: grafana-datasources
+          configMap:
+            name: grafana-datasources
+        - name: grafana-dashboards
+          emptyDir: {}
