@@ -1,37 +1,40 @@
-import sqlite3
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session, sessionmaker
 
-DATABASE = "chatbot.db"
+DATABASE_URL = "sqlite:///./chatbot.db"  # Adjust path as needed
 
-def create_table():
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS chat_interactions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                chat_id TEXT NOT NULL,
-                user_message TEXT NOT NULL,
-                bot_response TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        conn.commit()
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def store_chat(chat_id, user_message, bot_response):
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO chat_interactions (chat_id, user_message, bot_response)
-            VALUES (?, ?, ?)
-        """, (chat_id, user_message, bot_response))
-        conn.commit()
+Base = declarative_base()
 
-def load_chats(chat_id):
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT user_message, bot_response, timestamp
-            FROM chat_interactions
-            WHERE chat_id = ?
-            ORDER BY timestamp
-        """, (chat_id,))
-        return cursor.fetchall()
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+
+
+def create_tables():
+    # Create the database tables
+    Base.metadata.create_all(bind=engine)
+
+
+def get_db_session():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+async def get_or_create_user(username: str, db: Session):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        user = User(username=username)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    return user

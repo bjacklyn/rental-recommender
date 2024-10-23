@@ -25,7 +25,7 @@ async function sendMessage() {
         const botResponse = "This is a placeholder response."; // Replace with actual bot logic
         
         // Store the chat interaction
-        await fetch('/chat/', {
+        await fetch('/chat-app/chat/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ async function sendMessage() {
 }
 
 async function loadChat(chatId) {
-    const response = await fetch(`/load-chat/${chatId}`);
+    const response = await fetch(`/chat-app/load-chat/${chatId}`);
     const data = await response.json();
     
     document.getElementById('chat-output').innerHTML = '';
