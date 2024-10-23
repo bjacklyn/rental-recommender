@@ -12,10 +12,13 @@ function App() {
     };
 
   return (
-    <div className="App">
-        <h1>Chat Application</h1>
-        <ChatLogs onSelectChat={onSelectChat} />
-        <Chat chatId={chatId} />
+    <div className="chat-app">
+        <div className="chat-logs-container">
+            <ChatLogs onSelectChat={onSelectChat} />
+        </div>
+        <div className="chat-container">
+            <Chat chatId={chatId} />
+        </div>
     </div>
   );
 }
