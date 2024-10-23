@@ -26,14 +26,14 @@ data:
     email_domains=["*"]
     oidc_issuer_url="http://houseproject.internal/keycloak/realms/houseproject"
     scope="openid"
-    # pass-authorization-header=true
-    # pass-access-token=true
-    # pass-user-headers=true
-    # set-authorization-header=true
-    # set-xauthrequest=true
+    # pass_authorization_header=true
+    # pass_access_token=true
+    # pass_user_headers=true
+    set_authorization_header=true
+    set_xauthrequest=true
     # cookie-refresh="1m"
     # cookie-expire="30m"
-    # code-challenge-method="S256"
+    code_challenge_method="S256"
     # cookie_domains=["localhost"]
     # whitelist_domains=[".localhost:*"]
     # Redis session store config
