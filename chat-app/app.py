@@ -15,10 +15,6 @@ app.mount("/chat-app/static", StaticFiles(directory="static"), name="static")
 # Create the database table
 create_tables()
 
-class ChatMessage(BaseModel):
-    chat_id: str
-    user_message: str
-    bot_response: str
 
 @router.get("/", response_class=HTMLResponse)
 async def get_chat_interface():

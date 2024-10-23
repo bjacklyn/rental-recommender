@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import relationship, Session, sessionmaker
 
 DATABASE_URL = "sqlite:///./chatbot.db"  # Adjust path as needed
 
@@ -15,6 +15,24 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
+
+
+class ChatLog(Base):
+    __tablename__ = "chat_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))  # Foreign key to User table
+    messages = relationship("ChatMessage", back_populates="chat_log")  # One-to-many relationship
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    chat_log_id = Column(Integer, ForeignKey("chat_logs.id"))  # Foreign key to ChatLog table
+    prompt = Column(String, index=True)  # User prompt
+    response = Column(String, index=True)  # Bot response
+    chat_log = relationship("ChatLog", back_populates="messages")  # Many-to-one relationship
 
 
 def create_tables():
