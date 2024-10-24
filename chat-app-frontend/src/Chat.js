@@ -19,6 +19,16 @@ const Chat = () => {
         return mergedMessages;
     };
 
+    const logError = (errorMessage, firstMessage, secondMessage) => {
+        console.error(errorMessage);
+        if (firstMessage) {
+            console.error(firstMessage);
+        }
+        if (secondMessage) {
+            console.error(secondMessage);
+        }
+    };
+
     const connectWebSocket = (chatLogId) => {
         const ws = new WebSocket(`ws://localhost:8000/chat-app/ws/chat/${chatLogId}`);
 
@@ -33,8 +43,54 @@ const Chat = () => {
         };
 
         ws.onmessage = (event) => {
-            const message = event.data;
-            setMessages((prevMessages) => mergeChatMessages(prevMessages, [JSON.parse(message)], activeChatId));
+            const message = JSON.parse(event.data);
+
+            if (message.type !== "initial" && message.type !== "partial" && message.type !== "complete") {
+                logError("Unknown message type received..", message);
+                return;
+            }
+
+            if (message.type === "initial") {
+                setMessages((prevMessages) => mergeChatMessages(prevMessages, [message], activeChatId));
+                return;
+            }
+
+            setMessages((prevMessages) => {
+                const existingMessageIndex = prevMessages.findIndex(msg => msg.id === message.id);
+                if (existingMessageIndex <= -1) {
+                    logError("Unknown message received from websocket does not match any existing message..", message);
+                    return prevMessages;
+                }
+
+                const updatedMessages = [...prevMessages];
+                var currentMessage = updatedMessages[existingMessageIndex];
+                if (message.count === currentMessage.count) {
+                    // Duplicate message..
+                    logError("Received duplicate websocket message", message, currentMessage);
+                    return prevMessages;
+                } else if (message.count !== currentMessage.count + 1) {
+                    // We missed a message..
+                    logError("We missed a websocket message..", message, currentMessage);
+                    return prevMessages;
+                }
+
+                // If we got here then this message is in fact the next expected message
+                if (message.type === "partial") {
+                    if (currentMessage.type !== "initial" && currentMessage.type !== "partial") {
+                        logError("Received partial message after completion..", message, currentMessage);
+                        return prevMessages;
+                    }
+
+                    currentMessage.type = message.type;
+                    currentMessage.count = message.count;
+                    currentMessage.response += message.response; // Append response
+                } else if (message.type === "complete") {
+                    delete currentMessage.type;
+                    delete currentMessage.count;
+                }
+
+                return updatedMessages;
+            });
         };
 
         ws.onclose = () => {

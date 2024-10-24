@@ -1,13 +1,16 @@
+import asyncio
 import os
 
 from db import (add_chat_message, create_chat_log, create_tables, delete_chat_log, get_chat_log_for_user, get_chat_logs_for_user,
-                get_chat_messages_for_log, get_db_session, get_or_create_user, ChatLog, ChatMessage, User)
+                get_chat_messages_for_log, get_db_session, get_or_create_user, update_chat_message, ChatLog, ChatMessage, User)
 from fastapi import APIRouter, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
 # Check if the app is in development mode
 is_dev = os.getenv("DEV_MODE", "false").lower() == "true"
@@ -155,6 +158,96 @@ async def chat_websocket(chat_log_id: int, websocket: WebSocket, db: Session = D
     await chat(websocket, db, chat_log_id)
 
 
+#model_name = "gpt2"
+model_name = "EleutherAI/gpt-neo-2.7B"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+#tokenizer.pad_token = tokenizer.eos_token
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+# Move the model to GPU if available
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+model.to(device)
+
+model.eval()
+
+def token_generator(prompt: str, max_output_tokens=50):
+    input_ids = tokenizer.encode(prompt, return_tensors="pt")
+    eos_token_id = tokenizer.eos_token_id
+
+    for _ in range(max_output_tokens):
+        with torch.no_grad():
+            outputs = model(input_ids)
+            next_token_logits = outputs.logits[:, -1, :]
+            next_token = torch.argmax(next_token_logits, dim=-1)
+
+            # Check for EOS token
+            if next_token.item() == eos_token_id:
+                break
+
+            input_ids = torch.cat([input_ids, next_token.unsqueeze(0)], dim=1)
+            yield tokenizer.decode(next_token)
+
+
+def full_text_generator_gpt2(prompt: str):
+    # Encode the input text with padding and attention mask
+    inputs = tokenizer.encode_plus(
+        prompt,
+        return_tensors="pt",
+        padding="max_length",  # Or use "longest" if you have multiple inputs
+        max_length=50,         # Set max length for padding
+        truncation=True         # Ensure truncation if input exceeds max_length
+    )
+
+    input_ids = inputs['input_ids']
+    attention_mask = inputs['attention_mask']
+
+    # Generate text
+    output = model.generate(
+        input_ids,
+        attention_mask=attention_mask,  # Include the attention mask
+        max_length=100,            # Maximum length of generated text
+        num_return_sequences=1,    # Number of sequences to generate
+        do_sample=True,            # Use sampling for more diverse outputs
+        top_k=50,                  # Limit to top-k tokens for sampling
+        top_p=0.95,                # Nucleus sampling
+        temperature=0.7,           # Control randomness (lower is less random)
+        eos_token_id=tokenizer.eos_token_id,  # Specify the end-of-sequence token
+    )
+
+    # Decode the generated text
+    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+
+    print(generated_text)
+
+    for word in generated_text.split(" "):
+        yield word
+
+
+def full_text_generator_gpt_neo_27b(prompt: str):
+    # Encode the input text with padding and attention mask
+    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)  # Move input_ids to GPU
+
+    # Generate text
+    output = model.generate(
+        input_ids,
+        max_length=100,            # Maximum length of generated text
+        num_return_sequences=1,    # Number of sequences to generate
+        do_sample=True,            # Use sampling for more diverse outputs
+        top_k=50,                  # Limit to top-k tokens for sampling
+        top_p=0.95,                # Nucleus sampling
+        temperature=0.7,           # Control randomness (lower is less random)
+        eos_token_id=tokenizer.eos_token_id,  # Specify the end-of-sequence token
+    )
+
+    # Decode the generated text
+    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+
+    print(generated_text)
+
+    for word in generated_text.split(" "):
+        yield word
+
+
 async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat_log_id: int = None):
     try:
         user = await get_user(websocket, db)
@@ -169,18 +262,69 @@ async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat
             # Receive a message from the client
             prompt = await websocket.receive_text()
 
-            # If this is the first message in a new chat, create new ChatLog
-            if not chat_log:
-                chat_log = create_chat_log(user.id, db)
+            # Response will be incrementally generated
+            response = ""
 
-            # Process the message (TODO: generate a bot response)
-            response = f"Bot: You said '{prompt}'"
-
-            # Save ChatMessage in database
+            # Save ChatMessage with empty response in database
             chat_message = add_chat_message(chat_log.id, prompt, response, db)
 
-            # Send a response back to the client
-            await websocket.send_json(chat_message_to_dict(chat_message))
+            # Send an initial response back to the client with the chat_message's id
+            message_count = 0
+            initial_chat_message_json = chat_message_to_dict(chat_message)
+            initial_chat_message_json["type"] = "initial"
+            initial_chat_message_json["count"] = message_count
+            await websocket.send_json(initial_chat_message_json)
+
+
+            print(prompt)
+
+
+            generator = full_text_generator_gpt_neo_27b(prompt)
+            #generator = token_generator(prompt)
+            for token in generator:
+                response += token
+                message_count = message_count + 1
+                await websocket.send_json({
+                    "id": chat_message.id,
+                    "response": token + " ",
+                    "type": "partial",
+                    "count": message_count,
+                })
+
+            print("Done with model")
+
+
+            # Process the message (TODO: generate a bot response)
+#            response_parts = [
+#                "Hello, this is a response from the LLM.\n ",
+#                " I'm generating the response in parts.\n ",
+#                f"You said '{prompt}'.\n ",
+#                " This is the last part of the response.",
+#            ]
+
+#            for part in response_parts:
+#                response = response + part
+#                message_count = message_count + 1
+#                await websocket.send_json({
+#                    "id": chat_message.id,
+#                    "response": part,
+#                    "type": "partial",
+#                    "count": message_count,
+#                })
+#                await asyncio.sleep(.5)
+
+
+
+            message_count = message_count + 1
+            await websocket.send_json({
+                "id": chat_message.id,
+                "type": "complete",
+                "count": message_count,
+            })
+
+            chat_message.response = response
+            update_chat_message(chat_message, db)
+
     except WebSocketDisconnect:
         print("Client disconnected")
     except Exception as e:
