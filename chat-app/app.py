@@ -1,7 +1,7 @@
 import os
 
-from db import (add_chat_message, create_chat_log, create_tables, get_chat_log_for_user, get_chat_logs_for_user,
-                get_chat_messages_for_log, get_db_session, get_or_create_user, ChatLog, User)
+from db import (add_chat_message, create_chat_log, create_tables, delete_chat_log, get_chat_log_for_user, get_chat_logs_for_user,
+                get_chat_messages_for_log, get_db_session, get_or_create_user, ChatLog, ChatMessage, User)
 from fastapi import APIRouter, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -93,8 +93,17 @@ async def get_user(request: Request, db: Session) -> User:
 
 def chat_log_to_dict(chat_log: ChatLog):
     return {
-        "chat_log_id": chat_log.id,
-        "chat_log_title": chat_log.created_at,
+        "id": chat_log.id,
+        "created_at": chat_log.created_at.isoformat(),
+    }
+
+def chat_message_to_dict(chat_message: ChatMessage):
+    return {
+        "id": chat_message.id,
+        "chat_log_id": chat_message.chat_log_id,
+        "prompt": chat_message.prompt,
+        "response": chat_message.response,
+        "created_at": chat_message.created_at.isoformat(),
     }
 
 
@@ -105,7 +114,6 @@ async def get_chat_logs(request: Request, db: Session = Depends(get_db_session))
     chat_logs = get_chat_logs_for_user(user.id, db)
 
     return {
-        "message": f"Welcome, {user.username}!",
         "user_id": user.id,
         "chat_logs": [chat_log_to_dict(chat_log) for chat_log in chat_logs],
     }
@@ -117,11 +125,7 @@ async def get_chat_log_messages(chat_log_id: int, request: Request, db: Session 
 
     chat_messages = get_chat_messages_for_log(user.id, chat_log_id, db)
 
-    return [{
-        "prompt": chat_message.prompt,
-        "response": chat_message.response,
-        "created_at": chat_message.created_at,
-    } for chat_message in chat_messages]
+    return [chat_message_to_dict(chat_message) for chat_message in chat_messages]
 
 
 @router.post("/new-chat")
@@ -133,10 +137,16 @@ async def new_chat(request: Request, db: Session = Depends(get_db_session)):
     return chat_log_to_dict(chat_log)
 
 
-@router.websocket("/ws/chat/")
-async def chat_websocket(websocket: WebSocket, db: Session = Depends(get_db_session)):
-    await websocket.accept()
-    await chat(websocket, db)
+@router.delete("/delete-chat/{chat_log_id}")
+async def delete_chat(chat_log_id: int, request: Request, db: Session = Depends(get_db_session)):
+    user = await get_user(request, db)
+
+    chat_log = get_chat_log_for_user(user.id, chat_log_id, db)
+    if chat_log:
+        delete_chat_log(chat_log, db)
+        return {"message": "Chat log deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Chat log not found")
 
 
 @router.websocket("/ws/chat/{chat_log_id}")
@@ -166,16 +176,18 @@ async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat
             # Process the message (TODO: generate a bot response)
             response = f"Bot: You said '{prompt}'"
 
-            # Send a response back to the client
-            await websocket.send_text(response)
-
             # Save ChatMessage in database
-            add_chat_message(chat_log.id, prompt, response, db)
+            chat_message = add_chat_message(chat_log.id, prompt, response, db)
+
+            # Send a response back to the client
+            await websocket.send_json(chat_message_to_dict(chat_message))
     except WebSocketDisconnect:
         print("Client disconnected")
     except Exception as e:
         print(e)
-        await websocket.send_text(f"Unexpected error: {str(e)}")
+        await websocket.send_json({
+             "error": str(e),
+        })
         await websocket.close()  # Close on unexpected error
 
 

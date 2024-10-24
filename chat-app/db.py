@@ -97,3 +97,8 @@ def add_chat_message(chat_log_id: int, prompt: str, response: str, db: Session):
     db.commit()
     db.refresh(chat_message)
     return chat_message
+
+
+def delete_chat_log(chat_log: ChatLog, db: Session):
+    db.delete(chat_log)
+    db.commit()

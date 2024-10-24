@@ -11,6 +11,14 @@ const Chat = () => {
     const [isSocketOpen, setIsSocketOpen] = useState(false);
     const pendingMessageRef = useRef('');
 
+    const mergeChatMessages = (first, second, activeChatId) => {
+        const messagesForActiveChatId = first.filter(item => item.chat_log_id == activeChatId);
+        const existingMessageIds = new Set(messagesForActiveChatId.map(item => item.id));
+        const uniqueNewChatMessages = second.filter(item => !existingMessageIds.has(item.id));
+        const mergedMessages = messagesForActiveChatId.concat(uniqueNewChatMessages).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        return mergedMessages;
+    };
+
     const connectWebSocket = (chatLogId) => {
         const ws = new WebSocket(`ws://localhost:8000/chat-app/ws/chat/${chatLogId}`);
 
@@ -26,7 +34,7 @@ const Chat = () => {
 
         ws.onmessage = (event) => {
             const message = event.data;
-            setMessages((prevMessages) => [...prevMessages, message]);
+            setMessages((prevMessages) => mergeChatMessages(prevMessages, [JSON.parse(message)], activeChatId));
         };
 
         ws.onclose = () => {
@@ -38,7 +46,14 @@ const Chat = () => {
 
     // Fetch messages when activeChatId changes
     useEffect(() => {
-        if (!activeChatId) return;
+        if (!activeChatId) {
+            setMessages([]);
+            if (socket) {
+                socket.close();
+                setSocket(null);
+            }
+            return;
+        }
 
         const fetchChatMessages = async () => {
             const response = await fetch(`http://localhost:8000/chat-app/get-chat-messages/${activeChatId}`, {
@@ -51,7 +66,7 @@ const Chat = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                setMessages(data.map(item => item.response));
+                setMessages((prevMessages) => mergeChatMessages(prevMessages, data, activeChatId));
             }
         };
 
@@ -80,7 +95,7 @@ const Chat = () => {
                 },
             });
             const data = await response.json();
-            dispatch(setActiveChatId(data.chat_log_id)); // Set the new chat ID
+            dispatch(setActiveChatId(data.id)); // Set the new chat ID
             dispatch(addChatLog(data)); // Add to chat logs
         }
 
@@ -105,7 +120,7 @@ const Chat = () => {
         <div className="chat-area">
             <div className="messages">
                 {messages.map((msg, index) => (
-                    <div key={index} className="message">{msg}</div>
+                    <div key={index} className="message">{msg.response}</div>
                 ))}
             </div>
             <input
