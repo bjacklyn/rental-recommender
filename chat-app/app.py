@@ -10,6 +10,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import LlamaForCausalLM, LlamaTokenizer
+from transformers import pipeline, TextStreamer, TextIteratorStreamer
+import time
 import torch
 
 # Check if the app is in development mode
@@ -159,33 +162,26 @@ async def chat_websocket(chat_log_id: int, websocket: WebSocket, db: Session = D
 
 
 #model_name = "gpt2"
-model_name = "EleutherAI/gpt-neo-2.7B"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+#model_name = "EleutherAI/gpt-neo-2.7B"
+#model_name = "/home/bjacklyn/.transformers/Llama3.2-1B-Instruct"
+#model_name = "meta-llama/Llama-3.2-1B-Instruct"
+#tokenizer = AutoTokenizer.from_pretrained(model_name)
 #tokenizer.pad_token = tokenizer.eos_token
-model = AutoModelForCausalLM.from_pretrained(model_name)
+#model = AutoModelForCausalLM.from_pretrained(model_name)
+#model = torch.load("/home/bjacklyn/.llama/checkpoints/Llama3.2-3B/consolidated.00.pth")
+
+
+# Load the tokenizer
+#tokenizer = LlamaTokenizer.from_pretrained(model_name)
+
+# Load the model using the LLaMA model class
+#model = LlamaForCausalLM.from_pretrained(model_name)
 
 # Move the model to GPU if available
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model.to(device)
+#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+#model.to(device)
 
-model.eval()
-
-def token_generator(prompt: str, max_output_tokens=50):
-    input_ids = tokenizer.encode(prompt, return_tensors="pt")
-    eos_token_id = tokenizer.eos_token_id
-
-    for _ in range(max_output_tokens):
-        with torch.no_grad():
-            outputs = model(input_ids)
-            next_token_logits = outputs.logits[:, -1, :]
-            next_token = torch.argmax(next_token_logits, dim=-1)
-
-            # Check for EOS token
-            if next_token.item() == eos_token_id:
-                break
-
-            input_ids = torch.cat([input_ids, next_token.unsqueeze(0)], dim=1)
-            yield tokenizer.decode(next_token)
+#model.eval()
 
 
 def full_text_generator_gpt2(prompt: str):
@@ -196,7 +192,7 @@ def full_text_generator_gpt2(prompt: str):
         padding="max_length",  # Or use "longest" if you have multiple inputs
         max_length=50,         # Set max length for padding
         truncation=True         # Ensure truncation if input exceeds max_length
-    )
+    ).to(device)
 
     input_ids = inputs['input_ids']
     attention_mask = inputs['attention_mask']
@@ -248,6 +244,158 @@ def full_text_generator_gpt_neo_27b(prompt: str):
         yield word
 
 
+def token_generator(prompt: str, max_output_tokens=50):
+    input_ids = tokenizer.encode(prompt, return_tensors="pt")
+    eos_token_id = tokenizer.eos_token_id
+
+    for _ in range(max_output_tokens):
+        with torch.no_grad():
+            outputs = model(input_ids)
+            next_token_logits = outputs.logits[:, -1, :]
+            next_token = torch.argmax(next_token_logits, dim=-1)
+
+            # Check for EOS token
+            if next_token.item() == eos_token_id:
+                break
+
+            input_ids = torch.cat([input_ids, next_token.unsqueeze(0)], dim=1)
+            yield tokenizer.decode(next_token)
+
+
+def full_text_generator_llama3(prompt: str):
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+
+    print("got here 1")
+
+    # Generate text
+    with torch.no_grad():
+        with torch.cuda.amp.autocast():
+            output = model.generate(
+                inputs["input_ids"],
+                max_length=1000,            # Maximum length of generated text
+                num_return_sequences=1,    # Number of sequences to generate
+#                do_sample=True,            # Use sampling for more diverse outputs
+#                top_k=50,                  # Limit to top-k tokens for sampling
+#                top_p=0.95,                # Nucleus sampling
+#                temperature=0.7,           # Control randomness (lower is less random)
+#                eos_token_id=tokenizer.eos_token_id,  # Specify the end-of-sequence token
+            )
+
+    print("got here 2")
+
+    # Decode the generated text
+    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+
+    print("got here 3")
+
+    print(generated_text)
+
+    print("Devices")
+    print(next(model.parameters()).device)
+    print(inputs["input_ids"].device)
+    print(output.device)
+
+    for word in generated_text.split(" "):
+        yield word
+
+
+
+
+model_id = "meta-llama/Llama-3.2-1B-Instruct"
+pipe = pipeline(
+    "text-generation",
+    model=model_id,
+    torch_dtype=torch.bfloat16,
+    device=torch.device('cuda', index=0),
+#    device_map="auto",
+)
+
+class WebSocketStreamer(TextStreamer):
+    def __init__(self, websocket: WebSocket, chat_message_id: int, message_count: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.generated_text = ""
+        self.websocket = websocket
+        self.chat_message_id = chat_message_id
+        self.message_count = message_count
+
+    def on_finalized_text(self, printable_text, stream_end: bool = False):
+        print(printable_text)
+        self.generated_text += printable_text
+        self.message_count += 1
+        if not stream_end:
+            asyncio.create_task(self.websocket.send_json({
+                "id": self.chat_message_id,
+                "response": printable_text,
+                "type": "partial",
+                "count": self.message_count,
+            }))
+            time.sleep(.1)
+        else:
+            asyncio.create_task(self.websocket.send_json({
+                "id": self.chat_message_id,
+                "type": "complete",
+                "count": self.message_count,
+            }))
+
+
+def full_text_generator_llama3_pipeline(prompt: str, streamer: WebSocketStreamer):
+    messages = [
+        {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
+        {"role": "user", "content": "Who are you?"},
+    ]
+
+    print("wtf1")
+
+    prompt = pipe.tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+
+    print("wtf2")
+
+    terminators = [
+        pipe.tokenizer.eos_token_id,
+        pipe.tokenizer.convert_tokens_to_ids("<|eot_id|>")
+    ]
+
+    print("wtf3")
+
+    print(prompt)
+
+#    streamer = TextIteratorStreamer(pipe.tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
+
+    outputs = pipe(
+        prompt,
+        max_new_tokens=256,
+        eos_token_id=terminators,
+        do_sample=True,
+        temperature=0.6,
+        top_p=0.9,
+        pad_token_id = pipe.tokenizer.eos_token_id,
+        streamer=streamer,
+    )
+
+    print("wtf4")
+
+    #generated_text = outputs[0]["generated_text"]
+    #print(generated_text)
+
+#    return streamer
+
+#    for token in streamer:
+#        yield token
+
+#    tokenized_chat = tokenizer.apply_chat_template(chat, tokenize=False)
+
+#    outputs = pipe(
+#        messages,
+#        max_new_tokens=256,
+#    )
+
+
+
+
 async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat_log_id: int = None):
     try:
         user = await get_user(websocket, db)
@@ -275,21 +423,20 @@ async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat
             initial_chat_message_json["count"] = message_count
             await websocket.send_json(initial_chat_message_json)
 
+            websocket_streamer = WebSocketStreamer(websocket, chat_message.id, message_count, pipe.tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
 
-            print(prompt)
-
-
-            generator = full_text_generator_gpt_neo_27b(prompt)
+#            generator = full_text_generator_llama3_pipeline(prompt, WebSocketStreamer(websocket, message_count))
+            full_text_generator_llama3_pipeline(prompt, websocket_streamer)
             #generator = token_generator(prompt)
-            for token in generator:
-                response += token
-                message_count = message_count + 1
-                await websocket.send_json({
-                    "id": chat_message.id,
-                    "response": token + " ",
-                    "type": "partial",
-                    "count": message_count,
-                })
+#            for token in generator:
+#                response += token
+#                message_count = message_count + 1
+#                await websocket.send_json({
+#                    "id": chat_message.id,
+#                    "response": token + " ",
+#                    "type": "partial",
+#                    "count": message_count,
+#                })
 
             print("Done with model")
 
@@ -315,12 +462,12 @@ async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat
 
 
 
-            message_count = message_count + 1
-            await websocket.send_json({
-                "id": chat_message.id,
-                "type": "complete",
-                "count": message_count,
-            })
+#            message_count = websocket_streamer.message_count + 1
+#            await websocket.send_json({
+#                "id": chat_message.id,
+#                "type": "complete",
+#                "count": message_count,
+#            })
 
             chat_message.response = response
             update_chat_message(chat_message, db)
