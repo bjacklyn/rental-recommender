@@ -2,7 +2,7 @@ import asyncio
 import multiprocessing
 import os
 
-from db import ChatDB, ChatLog, ChatMessage, User
+from db import ChatDB, Chat, ChatMessage, User
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -98,39 +98,39 @@ async def get_user(request: Request, db: ChatDB) -> User:
     return user
 
 
-def chat_log_to_dict(chat_log: ChatLog):
+def chat_to_dict(chat: Chat):
     return {
-        "id": chat_log.id,
-        "created_at": chat_log.created_at.isoformat(),
+        "id": chat.id,
+        "created_at": chat.created_at.isoformat(),
     }
 
 def chat_message_to_dict(chat_message: ChatMessage):
     return {
         "id": chat_message.id,
-        "chat_log_id": chat_message.chat_log_id,
+        "chat_id": chat_message.chat_id,
         "prompt": chat_message.prompt,
         "response": chat_message.response,
         "created_at": chat_message.created_at.isoformat(),
     }
 
 
-@router.get("/get-chat-logs")
-async def get_chat_logs(request: Request, db: ChatDB = Depends(ChatDB)):
+@router.get("/get-chats")
+async def get_chats(request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
-    chat_logs = db.get_chat_logs_for_user(user.id)
+    chats = db.get_chats(user.id)
 
     return {
         "user_id": user.id,
-        "chat_logs": [chat_log_to_dict(chat_log) for chat_log in chat_logs],
+        "chats": [chat_to_dict(chat) for chat in chats],
     }
 
 
-@router.get("/get-chat-messages/{chat_log_id}")
-async def get_chat_log_messages(chat_log_id: int, request: Request, db: ChatDB = Depends(ChatDB)):
+@router.get("/get-chat-messages/{chat_id}")
+async def get_chat_messages(chat_id: int, request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
-    chat_messages = db.get_chat_messages_for_log(user.id, chat_log_id)
+    chat_messages = db.get_chat_messages(user.id, chat_id)
 
     return [chat_message_to_dict(chat_message) for chat_message in chat_messages]
 
@@ -139,21 +139,21 @@ async def get_chat_log_messages(chat_log_id: int, request: Request, db: ChatDB =
 async def new_chat(request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
-    chat_log = db.create_chat_log(user.id)
+    chat = db.create_chat(user.id)
 
-    return chat_log_to_dict(chat_log)
+    return chat_to_dict(chat)
 
 
-@router.delete("/delete-chat/{chat_log_id}")
-async def delete_chat(chat_log_id: int, request: Request, db: ChatDB = Depends(ChatDB)):
+@router.delete("/delete-chat/{chat_id}")
+async def delete_chat(chat_id: int, request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
-    chat_log = db.get_chat_log_for_user(user.id, chat_log_id)
-    if chat_log:
-        db.delete_chat_log(chat_log)
-        return {"message": "Chat log deleted successfully"}
+    chat = db.get_chat(user.id, chat_id)
+    if chat:
+        db.delete_chat(chat)
+        return {"message": "Chat deleted successfully"}
     else:
-        raise HTTPException(status_code=404, detail="Chat log not found")
+        raise HTTPException(status_code=404, detail="Chat not found")
 
 
 class TokenQueueStreamer(TextStreamer):
@@ -168,25 +168,17 @@ class TokenQueueStreamer(TextStreamer):
 
 # Shared manager for handling user queues
 manager = None
-#manager = multiprocessing.Manager()
 
 # Dictionary to hold chat messages
-chat_logs_dict = None
-#chat_logs_dict = manager.dict()
+chats_dict = None
 
 # Queues for managing user prompts
 work_queue = None
-#work_queue = manager.Queue()
 
 
-async def handle_chat_messages(websocket: WebSocket, chat_log_id, db):
+async def handle_chat_messages(websocket: WebSocket, chat_id, user_id, db):
     try:
-        print(chat_log_id)
-        print(chat_log_id in chat_logs_dict)
-        print(chat_logs_dict[chat_log_id])
-        print("token_queue" in chat_logs_dict[chat_log_id])
-
-        token_queue = chat_logs_dict[chat_log_id]["token_queue"]
+        token_queue = chats_dict[chat_id]["token_queue"]
         chat_message = None
         message_count = None
 
@@ -201,9 +193,8 @@ async def handle_chat_messages(websocket: WebSocket, chat_log_id, db):
                 await asyncio.sleep(.1)  # Yield control back to the event loop
                 continue
 
-            # Now processing new chat_message!
             if not chat_message or token_chat_message_id != chat_message.id:
-                chat_message = chat_logs_dict[chat_log_id][token_chat_message_id]
+                chat_message = db.get_chat_message(token_chat_message_id)
                 message_count = 0
 
                 initial_chat_message_json = chat_message_to_dict(chat_message)
@@ -236,37 +227,34 @@ async def handle_chat_messages(websocket: WebSocket, chat_log_id, db):
         print(f"Error sending token: {e}")
 
 
-@router.websocket("/ws/chat/{chat_log_id}")
-async def chat(chat_log_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB)):
+@router.websocket("/ws/chat/{chat_id}")
+async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB)):
     await websocket.accept()
 
     try:
         user = await get_user(websocket, db)
 
-        chat_log = None
-        if chat_log_id:
-            chat_log = db.get_chat_log_for_user(user.id, chat_log_id)
-            if not chat_log:
-                raise HTTPException(status_code=400, detail=f"{chat_log_id} does not exist or is not owned by you")
+        chat = None
+        if chat_id:
+            chat = db.get_chat(user.id, chat_id)
+            if not chat:
+                raise HTTPException(status_code=400, detail=f"{chat_id} does not exist or is not owned by you")
 
-        if chat_log_id not in chat_logs_dict:
-            chat_logs_dict[chat_log_id] = manager.dict()
+        if chat_id not in chats_dict:
+            chats_dict[chat_id] = manager.dict()
 
-        chat_logs_dict[chat_log_id]["token_queue"] = manager.Queue()
-        print("wtf")
-        print(chat_logs_dict[chat_log_id])
-        asyncio.create_task(handle_chat_messages(websocket, chat_log_id, db))
+        chats_dict[chat_id]["token_queue"] = manager.Queue()
+        asyncio.create_task(handle_chat_messages(websocket, chat_id, user.id, db))
 
         while True:
             # Receive a message from the client
             prompt = await websocket.receive_text()
 
-            # Save ChatMessage with empty response in database
-            chat_message = db.add_chat_message(chat_log.id, prompt, "")
-            chat_logs_dict[chat_log_id][chat_message.id] = chat_message
+            # Save ChatMessage with empty response in database to get a chat_message.id
+            chat_message = db.create_chat_message(chat.id, prompt, "")
 
             # Send work to LLM process
-            work_queue.put((prompt, chat_log_id, chat_message.id))
+            work_queue.put((prompt, chat_id, chat_message.id))
 
     except WebSocketDisconnect:
         print("Client disconnected")
@@ -277,10 +265,10 @@ async def chat(chat_log_id: int, websocket: WebSocket, db: ChatDB = Depends(Chat
         })
         await websocket.close()  # Close on unexpected error
     finally:
-        if chat_log_id in chat_logs_dict:
-            if "token_queue" in chat_logs_dict[chat_log_id]:
-                chat_logs_dict[chat_log_id]["token_queue"].put((None, None, None))
-                del chat_logs_dict[chat_log_id]["token_queue"]
+        if chat_id in chats_dict:
+            if "token_queue" in chats_dict[chat_id]:
+                chats_dict[chat_id]["token_queue"].put((None, None, None))
+                del chats_dict[chat_id]["token_queue"]
 
 
 app.include_router(router)
@@ -288,7 +276,7 @@ app.include_router(router)
 chatbot_process = None
 
 
-def chat_bot_pipeline(work_queue, chat_logs_dict):
+def chat_bot_pipeline(work_queue, chats_dict):
     model_id = "meta-llama/Llama-3.2-1B-Instruct"
 
     print(model_id)
@@ -302,13 +290,13 @@ def chat_bot_pipeline(work_queue, chat_logs_dict):
     )
 
     while True:
-        user_message, chat_log_id, chat_message_id = work_queue.get()
+        user_message, chat_id, chat_message_id = work_queue.get()
         if chat_message_id is None:  # Exit signal
             break
 
-        print("Working on: " + str(chat_log_id) + ". " + user_message)
+        print("Working on: " + str(chat_id) + ". " + user_message)
 
-        token_queue = chat_logs_dict[chat_log_id]["token_queue"]
+        token_queue = chats_dict[chat_id]["token_queue"]
 
         token_queue_streamer = TokenQueueStreamer(token_queue, chat_message_id, pipe.tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
 
@@ -343,17 +331,14 @@ def chat_bot_pipeline(work_queue, chat_logs_dict):
 
 @app.on_event("startup")
 def startup_event() -> None:
-    global manager, chat_logs_dict, work_queue
+    global manager, chats_dict, work_queue, chatbot_process
     manager = multiprocessing.Manager()
-    chat_logs_dict = manager.dict()
+    chats_dict = manager.dict()
     work_queue = manager.Queue()
 
-    chatbot_process = multiprocessing.Process(target=chat_bot_pipeline, args=(work_queue,chat_logs_dict,))
+    chatbot_process = multiprocessing.Process(target=chat_bot_pipeline, args=(work_queue,chats_dict,))
     chatbot_process.start()
     print("Chatbot process started.")
-
-#    multiprocessing.set_start_method("spawn", force=True)
-
 
 
 @app.on_event("shutdown")
@@ -364,20 +349,3 @@ async def shutdown_event():
         chatbot_process.terminate()  # Gracefully terminate the worker process
         chatbot_process.join()  # Wait for it to finish
         print("Chatbot process terminated.")
-
-
-#import signal
-#import time
-#import os
-
-#def handle_sigterm(signum, frame):
-#    print("SIGTERM received, shutting down child processes...")
-#    if process:
-#        process.terminate()
-
-#signal.signal(signal.SIGTERM, handle_sigterm)
-
-
-#if __name__ == '__main__':
-    # Start the chat bot process
-

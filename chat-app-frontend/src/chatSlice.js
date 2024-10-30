@@ -3,18 +3,18 @@ import { createSlice } from '@reduxjs/toolkit';
 const chatSlice = createSlice({
     name: 'chat',
     initialState: {
-        chatLogs: [],
+        chats: [],
         activeChatId: null,
     },
     reducers: {
-        setChatLogs(state, action) {
-            state.chatLogs = action.payload;
+        setChats(state, action) {
+            state.chats = action.payload;
         },
-        addChatLog(state, action) {
-            state.chatLogs.unshift(action.payload);
+        addChat(state, action) {
+            state.chats.unshift(action.payload);
         },
-        removeChatLog(state, action) {
-            state.chatLogs = state.chatLogs.filter(log => log.id != action.payload);
+        removeChat(state, action) {
+            state.chats = state.chats.filter(chat => chat.id != action.payload);
         },
         setActiveChatId(state, action) {
             state.activeChatId = action.payload;
@@ -22,5 +22,5 @@ const chatSlice = createSlice({
     },
 });
 
-export const { setChatLogs, addChatLog, removeChatLog, setActiveChatId } = chatSlice.actions;
+export const { setChats, addChat, removeChat, setActiveChatId } = chatSlice.actions;
 export default chatSlice.reducer;

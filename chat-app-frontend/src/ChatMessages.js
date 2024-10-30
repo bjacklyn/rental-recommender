@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addChatLog, setActiveChatId } from './chatSlice';
+import { addChat, setActiveChatId } from './chatSlice';
 
-const Chat = () => {
+const ChatMessages = () => {
     const dispatch = useDispatch();
     const { activeChatId } = useSelector((state) => state.chat);
     const [input, setInput] = useState('');
@@ -12,7 +12,7 @@ const Chat = () => {
     const pendingMessageRef = useRef('');
 
     const mergeChatMessages = (first, second, activeChatId) => {
-        const messagesForActiveChatId = first.filter(item => item.chat_log_id === activeChatId);
+        const messagesForActiveChatId = first.filter(item => item.chat_id === activeChatId);
         const existingMessageIds = new Set(messagesForActiveChatId.map(item => item.id));
         const uniqueNewChatMessages = second.filter(item => !existingMessageIds.has(item.id));
         const mergedMessages = messagesForActiveChatId.concat(uniqueNewChatMessages).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -29,8 +29,8 @@ const Chat = () => {
         }
     };
 
-    const connectWebSocket = (chatLogId) => {
-        const ws = new WebSocket(`ws://localhost:8000/chat-app/ws/chat/${chatLogId}`);
+    const connectWebSocket = (chatId) => {
+        const ws = new WebSocket(`ws://localhost:8000/chat-app/ws/chat/${chatId}`);
 
         ws.onopen = () => {
             setIsSocketOpen(true);
@@ -137,7 +137,7 @@ const Chat = () => {
             socket.close();
         }
 
-        // Reconnect WebSocket for the new chat log
+        // Reconnect WebSocket for the new chat
         connectWebSocket(activeChatId);
 
     }, [activeChatId]); // Dependency array includes activeChatId
@@ -145,7 +145,7 @@ const Chat = () => {
     const sendMessage = async () => {
         if (!input) return;
 
-        // If no active chat ID, create a new chat log
+        // If no active chat ID, create a new chat
         if (!activeChatId) {
             const response = await fetch('http://localhost:8000/chat-app/new-chat', {
                 method: 'POST',
@@ -156,7 +156,7 @@ const Chat = () => {
             });
             const data = await response.json();
             dispatch(setActiveChatId(data.id)); // Set the new chat ID
-            dispatch(addChatLog(data)); // Add to chat logs
+            dispatch(addChat(data)); // Add to chats
         }
 
         // Save the message if the socket is not open
@@ -195,4 +195,4 @@ const Chat = () => {
     );
 };
 
-export default Chat;
+export default ChatMessages;

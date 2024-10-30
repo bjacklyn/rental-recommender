@@ -1,8 +1,8 @@
 import logo from './logo.svg';
 import './App.css';
 import { useState } from 'react';
-import Chat from './Chat';
-import ChatLogs from './ChatLogs';
+import ChatMessages from './ChatMessages';
+import Chats from './Chats';
 
 function App() {
     const [chatId, setChatId] = useState('');
@@ -13,11 +13,11 @@ function App() {
 
   return (
     <div className="chat-app">
-        <div className="chat-logs-container">
-            <ChatLogs onSelectChat={onSelectChat} />
+        <div className="chats-container">
+            <Chats onSelectChat={onSelectChat} />
         </div>
-        <div className="chat-container">
-            <Chat chatId={chatId} />
+        <div className="chat-messages-container">
+            <ChatMessages chatId={chatId} />
         </div>
     </div>
   );

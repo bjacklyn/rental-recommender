@@ -16,35 +16,35 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.chat-logs-container {
+.chats-container {
     width: 300px; /* Fixed width for chat logs */
     padding: 10px; /* Optional padding */
     overflow-y: auto; /* Scroll if content is too long */
 }
 
-.chat-container {
+.chat-messages-container {
     flex: 1; /* Take up remaining space */
     display: flex;
     flex-direction: column; /* Align messages and input vertically */
     padding: 10px; /* Optional padding */
 }
 
-.chat-logs {
+.chats {
     padding-right: 20px;
 }
 
-.chat-logs ul {
+.chats ul {
     list-style: none;
     padding: 0;
 }
 
-.chat-logs li {
+.chats li {
     display: flex;
     align-items: center; /* Center vertically */
     justify-content: space-between; /* Center horizontally */
 }
 
-.chat-logs span {
+.chats span {
     padding: 10px 10px; /* Add padding for better click area */
     border: 1px solid transparent; /* Transparent border for spacing */
     margin: 5px 0; /* Space between items */
@@ -53,12 +53,12 @@ body {
     transition: background-color 0.3s, border-color 0.3s; /* Smooth transition */
 }
 
-.chat-logs span:hover {
+.chats span:hover {
     background-color: #f0f0f0; /* Light gray background on hover */
     border-color: #007bff; /* Change border color on hover */
 }
 
-.chat-logs span.active {
+.chats span.active {
     background-color: #007bff;
     color: white;
     border-color: #0056b3; /* Darker border for active */

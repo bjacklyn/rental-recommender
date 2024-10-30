@@ -13,24 +13,24 @@ class User(Base):
     username = Column(String, unique=True, index=True)
 
 
-class ChatLog(Base):
-    __tablename__ = "chat_logs"
+class Chat(Base):
+    __tablename__ = "chats"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))  # Foreign key to User table
     created_at = Column(DateTime, default=datetime.utcnow) # Automatically set to the current UTC time
-    messages = relationship("ChatMessage", back_populates="chat_log")  # One-to-many relationship
+    chat_messages = relationship("ChatMessage", back_populates="chats")  # One-to-many relationship
 
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    chat_log_id = Column(Integer, ForeignKey("chat_logs.id"))  # Foreign key to ChatLog table
+    chat_id = Column(Integer, ForeignKey("chats.id"))  # Foreign key to Chat table
     prompt = Column(String, index=True)  # User prompt
     response = Column(String, index=True)  # Bot response
     created_at = Column(DateTime, default=datetime.utcnow)  # Automatically set to the current UTC time
-    chat_log = relationship("ChatLog", back_populates="messages")  # Many-to-one relationship
+    chats = relationship("Chat", back_populates="chat_messages")  # Many-to-one relationship
 
 
 # TODO: Eventually use another database like postgres, but sqlite is good for development
@@ -42,10 +42,12 @@ session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 class ChatDB:
     def __init__(self):
         self.db = session()
+        print("Created session")
 
 
     def __del__(self):
         self.db.close()
+        print("Deleted session")
 
 
     @staticmethod
@@ -64,42 +66,47 @@ class ChatDB:
         return user
 
 
-    def get_chat_log_for_user(self, user_id: int, chat_log_id: int):
-        chat_log = self.db.query(ChatLog).filter(and_(ChatLog.user_id == user_id, ChatLog.id == chat_log_id)).first()
-        return chat_log
+    def get_chat(self, user_id: int, chat_id: int):
+        chat = self.db.query(Chat).filter(and_(Chat.user_id == user_id, Chat.id == chat_id)).first()
+        return chat
 
 
-    def get_chat_logs_for_user(self, user_id: int):
-        # Query the ChatLog table for logs associated with the given user_id
-        chat_logs = self.db.query(ChatLog).filter(ChatLog.user_id == user_id).all()
-        return chat_logs
+    def get_chats(self, user_id: int):
+        # Query the Chat table for chats associated with the given user_id
+        chats = self.db.query(Chat).filter(Chat.user_id == user_id).all()
+        return chats
 
 
-    def get_chat_messages_for_log(self, user_id: int, chat_log_id: int):
+    def get_chat_message(self, chat_message_id: int):
+        chat_message = self.db.query(ChatMessage).filter(ChatMessage.id == chat_message_id).first()
+        return chat_message
+
+
+    def get_chat_messages(self, user_id: int, chat_id: int):
         messages = []
-        # Ensure the current user is the owner of this ChatLog before leaking all the messages
-        chat_log = self.get_chat_log_for_user(user_id, chat_log_id)
-        if chat_log:
-            # Get the ChatMessages for the associated ChatLog
-            messages = self.db.query(ChatMessage).filter(ChatMessage.chat_log_id == chat_log_id).order_by(ChatMessage.created_at).all()
+        # Ensure the current user is the owner of this Chat before leaking all the messages
+        chat = self.get_chat(user_id, chat_id)
+        if chat:
+            # Get the ChatMessages for the associated Chat
+            messages = self.db.query(ChatMessage).filter(ChatMessage.chat_id == chat_id).order_by(ChatMessage.created_at).all()
         return messages
 
 
-    def create_chat_log(self, user_id: int):
-        chat_log = ChatLog(user_id=user_id)
-        self.db.add(chat_log)
+    def create_chat(self, user_id: int):
+        chat = Chat(user_id=user_id)
+        self.db.add(chat)
         self.db.commit()
-        self.db.refresh(chat_log)
-        return chat_log
+        self.db.refresh(chat)
+        return chat
 
 
-    def delete_chat_log(self, chat_log: ChatLog):
-        self.db.delete(chat_log)
+    def delete_chat(self, chat: Chat):
+        self.db.delete(chat)
         self.db.commit()
 
 
-    def add_chat_message(self, chat_log_id: int, prompt: str, response: str):
-        chat_message = ChatMessage(chat_log_id=chat_log_id, prompt=prompt, response=response)
+    def create_chat_message(self, chat_id: int, prompt: str, response: str):
+        chat_message = ChatMessage(chat_id=chat_id, prompt=prompt, response=response)
         self.db.add(chat_message)
         self.db.commit()
         self.db.refresh(chat_message)
@@ -108,3 +115,4 @@ class ChatDB:
 
     def update_chat_message(self, chat_message: ChatMessage):
         self.db.commit()
+        self.db.refresh(chat_message)
