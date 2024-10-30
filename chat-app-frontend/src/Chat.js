@@ -12,7 +12,7 @@ const Chat = () => {
     const pendingMessageRef = useRef('');
 
     const mergeChatMessages = (first, second, activeChatId) => {
-        const messagesForActiveChatId = first.filter(item => item.chat_log_id == activeChatId);
+        const messagesForActiveChatId = first.filter(item => item.chat_log_id === activeChatId);
         const existingMessageIds = new Set(messagesForActiveChatId.map(item => item.id));
         const uniqueNewChatMessages = second.filter(item => !existingMessageIds.has(item.id));
         const mergedMessages = messagesForActiveChatId.concat(uniqueNewChatMessages).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -62,34 +62,38 @@ const Chat = () => {
                     return prevMessages;
                 }
 
-                const updatedMessages = [...prevMessages];
-                var currentMessage = updatedMessages[existingMessageIndex];
-                if (message.count === currentMessage.count) {
+                var messageToUpdate = { ...prevMessages[existingMessageIndex] }; // Create a new object for message to force react to re-render
+                if (message.count === messageToUpdate.count) {
                     // Duplicate message..
-                    logError("Received duplicate websocket message", message, currentMessage);
+                    logError("Received duplicate websocket message", message, messageToUpdate);
                     return prevMessages;
-                } else if (message.count !== currentMessage.count + 1) {
+                } else if (message.count !== messageToUpdate.count + 1) {
                     // We missed a message..
-                    logError("We missed a websocket message..", message, currentMessage);
+                    logError("We missed a websocket message..", message, messageToUpdate);
                     return prevMessages;
                 }
 
                 // If we got here then this message is in fact the next expected message
                 if (message.type === "partial") {
-                    if (currentMessage.type !== "initial" && currentMessage.type !== "partial") {
-                        logError("Received partial message after completion..", message, currentMessage);
+                    if (messageToUpdate.type !== "initial" && messageToUpdate.type !== "partial") {
+                        logError("Received partial message after completion..", message, messageToUpdate);
                         return prevMessages;
                     }
 
-                    currentMessage.type = message.type;
-                    currentMessage.count = message.count;
-                    currentMessage.response += message.response; // Append response
+                    messageToUpdate.type = message.type;
+                    messageToUpdate.count = message.count;
+                    messageToUpdate.response += message.response; // Append response
+                    console.log(message.response);
                 } else if (message.type === "complete") {
-                    delete currentMessage.type;
-                    delete currentMessage.count;
+                    delete messageToUpdate.type;
+                    delete messageToUpdate.count;
                 }
 
-                return updatedMessages;
+                return [
+                    ...prevMessages.slice(0, existingMessageIndex),
+                    messageToUpdate,
+                    ...prevMessages.slice(existingMessageIndex + 1),
+                ];
             });
         };
 

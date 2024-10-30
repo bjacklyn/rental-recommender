@@ -1,13 +1,15 @@
 import asyncio
+import multiprocessing
 import os
 
 from db import (add_chat_message, create_chat_log, create_tables, delete_chat_log, get_chat_log_for_user, get_chat_logs_for_user,
                 get_chat_messages_for_log, get_db_session, get_or_create_user, update_chat_message, ChatLog, ChatMessage, User)
-from fastapi import APIRouter, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from queue import Empty
 from sqlalchemy.orm import Session
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import LlamaForCausalLM, LlamaTokenizer
@@ -155,248 +157,90 @@ async def delete_chat(chat_log_id: int, request: Request, db: Session = Depends(
         raise HTTPException(status_code=404, detail="Chat log not found")
 
 
-@router.websocket("/ws/chat/{chat_log_id}")
-async def chat_websocket(chat_log_id: int, websocket: WebSocket, db: Session = Depends(get_db_session)):
-    await websocket.accept()
-    await chat(websocket, db, chat_log_id)
-
-
-#model_name = "gpt2"
-#model_name = "EleutherAI/gpt-neo-2.7B"
-#model_name = "/home/bjacklyn/.transformers/Llama3.2-1B-Instruct"
-#model_name = "meta-llama/Llama-3.2-1B-Instruct"
-#tokenizer = AutoTokenizer.from_pretrained(model_name)
-#tokenizer.pad_token = tokenizer.eos_token
-#model = AutoModelForCausalLM.from_pretrained(model_name)
-#model = torch.load("/home/bjacklyn/.llama/checkpoints/Llama3.2-3B/consolidated.00.pth")
-
-
-# Load the tokenizer
-#tokenizer = LlamaTokenizer.from_pretrained(model_name)
-
-# Load the model using the LLaMA model class
-#model = LlamaForCausalLM.from_pretrained(model_name)
-
-# Move the model to GPU if available
-#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#model.to(device)
-
-#model.eval()
-
-
-def full_text_generator_gpt2(prompt: str):
-    # Encode the input text with padding and attention mask
-    inputs = tokenizer.encode_plus(
-        prompt,
-        return_tensors="pt",
-        padding="max_length",  # Or use "longest" if you have multiple inputs
-        max_length=50,         # Set max length for padding
-        truncation=True         # Ensure truncation if input exceeds max_length
-    ).to(device)
-
-    input_ids = inputs['input_ids']
-    attention_mask = inputs['attention_mask']
-
-    # Generate text
-    output = model.generate(
-        input_ids,
-        attention_mask=attention_mask,  # Include the attention mask
-        max_length=100,            # Maximum length of generated text
-        num_return_sequences=1,    # Number of sequences to generate
-        do_sample=True,            # Use sampling for more diverse outputs
-        top_k=50,                  # Limit to top-k tokens for sampling
-        top_p=0.95,                # Nucleus sampling
-        temperature=0.7,           # Control randomness (lower is less random)
-        eos_token_id=tokenizer.eos_token_id,  # Specify the end-of-sequence token
-    )
-
-    # Decode the generated text
-    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
-
-    print(generated_text)
-
-    for word in generated_text.split(" "):
-        yield word
-
-
-def full_text_generator_gpt_neo_27b(prompt: str):
-    # Encode the input text with padding and attention mask
-    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)  # Move input_ids to GPU
-
-    # Generate text
-    output = model.generate(
-        input_ids,
-        max_length=100,            # Maximum length of generated text
-        num_return_sequences=1,    # Number of sequences to generate
-        do_sample=True,            # Use sampling for more diverse outputs
-        top_k=50,                  # Limit to top-k tokens for sampling
-        top_p=0.95,                # Nucleus sampling
-        temperature=0.7,           # Control randomness (lower is less random)
-        eos_token_id=tokenizer.eos_token_id,  # Specify the end-of-sequence token
-    )
-
-    # Decode the generated text
-    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
-
-    print(generated_text)
-
-    for word in generated_text.split(" "):
-        yield word
-
-
-def token_generator(prompt: str, max_output_tokens=50):
-    input_ids = tokenizer.encode(prompt, return_tensors="pt")
-    eos_token_id = tokenizer.eos_token_id
-
-    for _ in range(max_output_tokens):
-        with torch.no_grad():
-            outputs = model(input_ids)
-            next_token_logits = outputs.logits[:, -1, :]
-            next_token = torch.argmax(next_token_logits, dim=-1)
-
-            # Check for EOS token
-            if next_token.item() == eos_token_id:
-                break
-
-            input_ids = torch.cat([input_ids, next_token.unsqueeze(0)], dim=1)
-            yield tokenizer.decode(next_token)
-
-
-def full_text_generator_llama3(prompt: str):
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
-
-    print("got here 1")
-
-    # Generate text
-    with torch.no_grad():
-        with torch.cuda.amp.autocast():
-            output = model.generate(
-                inputs["input_ids"],
-                max_length=1000,            # Maximum length of generated text
-                num_return_sequences=1,    # Number of sequences to generate
-#                do_sample=True,            # Use sampling for more diverse outputs
-#                top_k=50,                  # Limit to top-k tokens for sampling
-#                top_p=0.95,                # Nucleus sampling
-#                temperature=0.7,           # Control randomness (lower is less random)
-#                eos_token_id=tokenizer.eos_token_id,  # Specify the end-of-sequence token
-            )
-
-    print("got here 2")
-
-    # Decode the generated text
-    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
-
-    print("got here 3")
-
-    print(generated_text)
-
-    print("Devices")
-    print(next(model.parameters()).device)
-    print(inputs["input_ids"].device)
-    print(output.device)
-
-    for word in generated_text.split(" "):
-        yield word
-
-
-
-
-model_id = "meta-llama/Llama-3.2-1B-Instruct"
-pipe = pipeline(
-    "text-generation",
-    model=model_id,
-    torch_dtype=torch.bfloat16,
-    device=torch.device('cuda', index=0),
-#    device_map="auto",
-)
-
-class WebSocketStreamer(TextStreamer):
-    def __init__(self, websocket: WebSocket, chat_message_id: int, message_count: int, *args, **kwargs):
+class TokenQueueStreamer(TextStreamer):
+    def __init__(self, token_queue, chat_message_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.generated_text = ""
-        self.websocket = websocket
+        self.token_queue = token_queue
         self.chat_message_id = chat_message_id
-        self.message_count = message_count
 
     def on_finalized_text(self, printable_text, stream_end: bool = False):
-        print(printable_text)
-        self.generated_text += printable_text
-        self.message_count += 1
-        if not stream_end:
-            asyncio.create_task(self.websocket.send_json({
-                "id": self.chat_message_id,
-                "response": printable_text,
+        self.token_queue.put((self.chat_message_id, printable_text, stream_end))
+
+
+# Shared manager for handling user queues
+manager = None
+#manager = multiprocessing.Manager()
+
+# Dictionary to hold chat messages
+chat_logs_dict = None
+#chat_logs_dict = manager.dict()
+
+# Queues for managing user prompts
+work_queue = None
+#work_queue = manager.Queue()
+
+
+async def handle_chat_messages(websocket: WebSocket, chat_log_id, db):
+    try:
+        print(chat_log_id)
+        print(chat_log_id in chat_logs_dict)
+        print(chat_logs_dict[chat_log_id])
+        print("token_queue" in chat_logs_dict[chat_log_id])
+
+        token_queue = chat_logs_dict[chat_log_id]["token_queue"]
+        chat_message = None
+        message_count = None
+
+        while True:
+            try:
+                token_chat_message_id, token, is_last_token = token_queue.get_nowait()
+
+                if token_chat_message_id is None:  # Exit signal
+                    break
+
+            except Empty:
+                await asyncio.sleep(.1)  # Yield control back to the event loop
+                continue
+
+            # Now processing new chat_message!
+            if not chat_message or token_chat_message_id != chat_message.id:
+                chat_message = chat_logs_dict[chat_log_id][token_chat_message_id]
+                message_count = 0
+
+                initial_chat_message_json = chat_message_to_dict(chat_message)
+                initial_chat_message_json["type"] = "initial"
+                initial_chat_message_json["count"] = message_count
+                await websocket.send_json(initial_chat_message_json)
+
+            chat_message.response += token
+            message_count += 1
+            await websocket.send_json({
+                "id": chat_message.id,
+                "response": token,
                 "type": "partial",
-                "count": self.message_count,
-            }))
-            time.sleep(.1)
-        else:
-            asyncio.create_task(self.websocket.send_json({
-                "id": self.chat_message_id,
-                "type": "complete",
-                "count": self.message_count,
-            }))
+                "count": message_count,
+            })
+
+            if is_last_token:
+                message_count += 1
+                await websocket.send_json({
+                    "id": chat_message.id,
+                    "type": "complete",
+                    "count": message_count,
+                })
+
+                # Save response in database
+                update_chat_message(chat_message, db)
+
+    except Exception as e:
+        print(e)
+        print(f"Error sending token: {e}")
 
 
-def full_text_generator_llama3_pipeline(prompt: str, streamer: WebSocketStreamer):
-    messages = [
-        {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
-        {"role": "user", "content": "Who are you?"},
-    ]
+@router.websocket("/ws/chat/{chat_log_id}")
+async def chat(chat_log_id: int, websocket: WebSocket, db: Session = Depends(get_db_session)):
+    await websocket.accept()
 
-    print("wtf1")
-
-    prompt = pipe.tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=True
-    )
-
-    print("wtf2")
-
-    terminators = [
-        pipe.tokenizer.eos_token_id,
-        pipe.tokenizer.convert_tokens_to_ids("<|eot_id|>")
-    ]
-
-    print("wtf3")
-
-    print(prompt)
-
-#    streamer = TextIteratorStreamer(pipe.tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
-
-    outputs = pipe(
-        prompt,
-        max_new_tokens=256,
-        eos_token_id=terminators,
-        do_sample=True,
-        temperature=0.6,
-        top_p=0.9,
-        pad_token_id = pipe.tokenizer.eos_token_id,
-        streamer=streamer,
-    )
-
-    print("wtf4")
-
-    #generated_text = outputs[0]["generated_text"]
-    #print(generated_text)
-
-#    return streamer
-
-#    for token in streamer:
-#        yield token
-
-#    tokenized_chat = tokenizer.apply_chat_template(chat, tokenize=False)
-
-#    outputs = pipe(
-#        messages,
-#        max_new_tokens=256,
-#    )
-
-
-
-
-async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat_log_id: int = None):
     try:
         user = await get_user(websocket, db)
 
@@ -406,71 +250,24 @@ async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat
             if not chat_log:
                 raise HTTPException(status_code=400, detail=f"{chat_log_id} does not exist or is not owned by you")
 
+        if chat_log_id not in chat_logs_dict:
+            chat_logs_dict[chat_log_id] = manager.dict()
+
+        chat_logs_dict[chat_log_id]["token_queue"] = manager.Queue()
+        print("wtf")
+        print(chat_logs_dict[chat_log_id])
+        asyncio.create_task(handle_chat_messages(websocket, chat_log_id, db))
+
         while True:
             # Receive a message from the client
             prompt = await websocket.receive_text()
 
-            # Response will be incrementally generated
-            response = ""
-
             # Save ChatMessage with empty response in database
-            chat_message = add_chat_message(chat_log.id, prompt, response, db)
+            chat_message = add_chat_message(chat_log.id, prompt, "", db)
+            chat_logs_dict[chat_log_id][chat_message.id] = chat_message
 
-            # Send an initial response back to the client with the chat_message's id
-            message_count = 0
-            initial_chat_message_json = chat_message_to_dict(chat_message)
-            initial_chat_message_json["type"] = "initial"
-            initial_chat_message_json["count"] = message_count
-            await websocket.send_json(initial_chat_message_json)
-
-            websocket_streamer = WebSocketStreamer(websocket, chat_message.id, message_count, pipe.tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
-
-#            generator = full_text_generator_llama3_pipeline(prompt, WebSocketStreamer(websocket, message_count))
-            full_text_generator_llama3_pipeline(prompt, websocket_streamer)
-            #generator = token_generator(prompt)
-#            for token in generator:
-#                response += token
-#                message_count = message_count + 1
-#                await websocket.send_json({
-#                    "id": chat_message.id,
-#                    "response": token + " ",
-#                    "type": "partial",
-#                    "count": message_count,
-#                })
-
-            print("Done with model")
-
-
-            # Process the message (TODO: generate a bot response)
-#            response_parts = [
-#                "Hello, this is a response from the LLM.\n ",
-#                " I'm generating the response in parts.\n ",
-#                f"You said '{prompt}'.\n ",
-#                " This is the last part of the response.",
-#            ]
-
-#            for part in response_parts:
-#                response = response + part
-#                message_count = message_count + 1
-#                await websocket.send_json({
-#                    "id": chat_message.id,
-#                    "response": part,
-#                    "type": "partial",
-#                    "count": message_count,
-#                })
-#                await asyncio.sleep(.5)
-
-
-
-#            message_count = websocket_streamer.message_count + 1
-#            await websocket.send_json({
-#                "id": chat_message.id,
-#                "type": "complete",
-#                "count": message_count,
-#            })
-
-            chat_message.response = response
-            update_chat_message(chat_message, db)
+            # Send work to LLM process
+            work_queue.put((prompt, chat_log_id, chat_message.id))
 
     except WebSocketDisconnect:
         print("Client disconnected")
@@ -480,6 +277,107 @@ async def chat(websocket: WebSocket, db: Session = Depends(get_db_session), chat
              "error": str(e),
         })
         await websocket.close()  # Close on unexpected error
+    finally:
+        if chat_log_id in chat_logs_dict:
+            if "token_queue" in chat_logs_dict[chat_log_id]:
+                chat_logs_dict[chat_log_id]["token_queue"].put((None, None, None))
+                del chat_logs_dict[chat_log_id]["token_queue"]
 
 
 app.include_router(router)
+
+chatbot_process = None
+
+
+def chat_bot_pipeline(work_queue, chat_logs_dict):
+    model_id = "meta-llama/Llama-3.2-1B-Instruct"
+
+    print(model_id)
+
+    pipe = pipeline(
+        "text-generation",
+        model=model_id,
+        torch_dtype=torch.bfloat16,
+        device=torch.device('cuda', index=0),
+#        device_map="auto",
+    )
+
+    while True:
+        user_message, chat_log_id, chat_message_id = work_queue.get()
+        if chat_message_id is None:  # Exit signal
+            break
+
+        print("Working on: " + str(chat_log_id) + ". " + user_message)
+
+        token_queue = chat_logs_dict[chat_log_id]["token_queue"]
+
+        token_queue_streamer = TokenQueueStreamer(token_queue, chat_message_id, pipe.tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
+
+        messages = [
+            {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
+            {"role": "user", "content": "Who are you?"},
+        ]
+
+        prompt = pipe.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+
+        terminators = [
+            pipe.tokenizer.eos_token_id,
+            pipe.tokenizer.convert_tokens_to_ids("<|eot_id|>")
+        ]
+
+        outputs = pipe(
+            prompt,
+            max_new_tokens=256,
+            eos_token_id=terminators,
+            do_sample=True,
+            temperature=0.6,
+            top_p=0.9,
+            pad_token_id = pipe.tokenizer.eos_token_id,
+            streamer=token_queue_streamer,
+        )
+
+
+@app.on_event("startup")
+def startup_event() -> None:
+    global manager, chat_logs_dict, work_queue
+    manager = multiprocessing.Manager()
+    chat_logs_dict = manager.dict()
+    work_queue = manager.Queue()
+
+    chatbot_process = multiprocessing.Process(target=chat_bot_pipeline, args=(work_queue,chat_logs_dict,))
+    chatbot_process.start()
+    print("Chatbot process started.")
+
+#    multiprocessing.set_start_method("spawn", force=True)
+
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    global chatbot_process
+    if chatbot_process:
+        print("Shutting down chatbot process.")
+        chatbot_process.terminate()  # Gracefully terminate the worker process
+        chatbot_process.join()  # Wait for it to finish
+        print("Chatbot process terminated.")
+
+
+#import signal
+#import time
+#import os
+
+#def handle_sigterm(signum, frame):
+#    print("SIGTERM received, shutting down child processes...")
+#    if process:
+#        process.terminate()
+
+#signal.signal(signal.SIGTERM, handle_sigterm)
+
+
+#if __name__ == '__main__':
+    # Start the chat bot process
+
