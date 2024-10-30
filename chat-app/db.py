@@ -3,12 +3,6 @@ from sqlalchemy import create_engine, Column, DateTime, ForeignKey, Integer, Str
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session, sessionmaker
 
-# TODO: Eventually use another database like postgres, but sqlite is good for development
-DATABASE_URL = "sqlite:///./chatbot.db"  # Adjust path as needed
-
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
 
@@ -39,70 +33,78 @@ class ChatMessage(Base):
     chat_log = relationship("ChatLog", back_populates="messages")  # Many-to-one relationship
 
 
-def create_tables():
-    # Create the database tables
-    Base.metadata.create_all(bind=engine)
+# TODO: Eventually use another database like postgres, but sqlite is good for development
+DATABASE_URL = "sqlite:///./chatbot.db"  # Adjust path as needed
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def get_db_session():
-    db = session()
-    try:
-        yield db
-    finally:
-        db.close()
+class ChatDB:
+    def __init__(self):
+        self.db = session()
 
 
-async def get_or_create_user(username: str, db: Session):
-    user = db.query(User).filter(User.username == username).first()
-    if not user:
-        user = User(username=username)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    return user
+    def __del__(self):
+        self.db.close()
 
 
-def get_chat_log_for_user(user_id: int, chat_log_id: int, db: Session):
-    chat_log = db.query(ChatLog).filter(and_(ChatLog.user_id == user_id, ChatLog.id == chat_log_id)).first()
-    return chat_log
+    @staticmethod
+    def create_tables():
+        # Create the database tables
+        Base.metadata.create_all(bind=engine)
 
 
-def get_chat_logs_for_user(user_id: int, db: Session):
-    # Query the ChatLog table for logs associated with the given user_id
-    chat_logs = db.query(ChatLog).filter(ChatLog.user_id == user_id).all()
-    return chat_logs
+    async def get_or_create_user(self, username: str):
+        user = self.db.query(User).filter(User.username == username).first()
+        if not user:
+            user = User(username=username)
+            self.db.add(user)
+            self.db.commit()
+            self.db.refresh(user)
+        return user
 
 
-def get_chat_messages_for_log(user_id: int, chat_log_id: int, db: Session):
-    messages = []
-    # Ensure the current user is the owner of this ChatLog before leaking all the messages
-    chat_log = get_chat_log_for_user(user_id, chat_log_id, db)
-    if chat_log:
-        # Get the ChatMessages for the associated ChatLog
-        messages = db.query(ChatMessage).filter(ChatMessage.chat_log_id == chat_log_id).order_by(ChatMessage.created_at).all()
-    return messages
+    def get_chat_log_for_user(self, user_id: int, chat_log_id: int):
+        chat_log = self.db.query(ChatLog).filter(and_(ChatLog.user_id == user_id, ChatLog.id == chat_log_id)).first()
+        return chat_log
 
 
-def create_chat_log(user_id: int, db: Session):
-    chat_log = ChatLog(user_id=user_id)
-    db.add(chat_log)
-    db.commit()
-    db.refresh(chat_log)
-    return chat_log
+    def get_chat_logs_for_user(self, user_id: int):
+        # Query the ChatLog table for logs associated with the given user_id
+        chat_logs = self.db.query(ChatLog).filter(ChatLog.user_id == user_id).all()
+        return chat_logs
 
 
-def delete_chat_log(chat_log: ChatLog, db: Session):
-    db.delete(chat_log)
-    db.commit()
+    def get_chat_messages_for_log(self, user_id: int, chat_log_id: int):
+        messages = []
+        # Ensure the current user is the owner of this ChatLog before leaking all the messages
+        chat_log = self.get_chat_log_for_user(user_id, chat_log_id)
+        if chat_log:
+            # Get the ChatMessages for the associated ChatLog
+            messages = self.db.query(ChatMessage).filter(ChatMessage.chat_log_id == chat_log_id).order_by(ChatMessage.created_at).all()
+        return messages
 
 
-def add_chat_message(chat_log_id: int, prompt: str, response: str, db: Session):
-    chat_message = ChatMessage(chat_log_id=chat_log_id, prompt=prompt, response=response)
-    db.add(chat_message)
-    db.commit()
-    db.refresh(chat_message)
-    return chat_message
+    def create_chat_log(self, user_id: int):
+        chat_log = ChatLog(user_id=user_id)
+        self.db.add(chat_log)
+        self.db.commit()
+        self.db.refresh(chat_log)
+        return chat_log
 
 
-def update_chat_message(chat_message: ChatMessage, db: Session):
-    db.commit()
+    def delete_chat_log(self, chat_log: ChatLog):
+        self.db.delete(chat_log)
+        self.db.commit()
+
+
+    def add_chat_message(self, chat_log_id: int, prompt: str, response: str):
+        chat_message = ChatMessage(chat_log_id=chat_log_id, prompt=prompt, response=response)
+        self.db.add(chat_message)
+        self.db.commit()
+        self.db.refresh(chat_message)
+        return chat_message
+
+
+    def update_chat_message(self, chat_message: ChatMessage):
+        self.db.commit()

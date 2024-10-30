@@ -2,8 +2,7 @@ import asyncio
 import multiprocessing
 import os
 
-from db import (add_chat_message, create_chat_log, create_tables, delete_chat_log, get_chat_log_for_user, get_chat_logs_for_user,
-                get_chat_messages_for_log, get_db_session, get_or_create_user, update_chat_message, ChatLog, ChatMessage, User)
+from db import ChatDB, ChatLog, ChatMessage, User
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -17,10 +16,10 @@ from transformers import pipeline, TextStreamer, TextIteratorStreamer
 import time
 import torch
 
+app = FastAPI()
+
 # Check if the app is in development mode
 is_dev = os.getenv("DEV_MODE", "false").lower() == "true"
-
-app = FastAPI()
 
 # Dealing with CORS (Cross-Origin-Resource-Sharing) is a pain in development
 # so allow requests from all origins in dev mode
@@ -43,7 +42,7 @@ if is_dev:
 app.mount("/chat-app/static", StaticFiles(directory="static"), name="static")
 
 # Create the database table
-create_tables()
+ChatDB.create_tables()
 
 # Create the FastAPI Router
 router = APIRouter(prefix="/chat-app")
@@ -83,7 +82,7 @@ async def get_chat_interface():
     </html>
     """
 
-async def get_user(request: Request, db: Session) -> User:
+async def get_user(request: Request, db: ChatDB) -> User:
     x_auth_request_user_header = "x-auth-request-user"
 
     # Passing the Keycloak Authentication headers is a pain in development..
@@ -95,7 +94,7 @@ async def get_user(request: Request, db: Session) -> User:
     if not auth_request_user:
         raise HTTPException(status_code=400, detail=f"{x_auth_request_user_header} header is missing")
 
-    user = await get_or_create_user(username=auth_request_user, db=db)
+    user = await db.get_or_create_user(username=auth_request_user)
     return user
 
 
@@ -116,10 +115,10 @@ def chat_message_to_dict(chat_message: ChatMessage):
 
 
 @router.get("/get-chat-logs")
-async def get_chat_logs(request: Request, db: Session = Depends(get_db_session)):
+async def get_chat_logs(request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
-    chat_logs = get_chat_logs_for_user(user.id, db)
+    chat_logs = db.get_chat_logs_for_user(user.id)
 
     return {
         "user_id": user.id,
@@ -128,30 +127,30 @@ async def get_chat_logs(request: Request, db: Session = Depends(get_db_session))
 
 
 @router.get("/get-chat-messages/{chat_log_id}")
-async def get_chat_log_messages(chat_log_id: int, request: Request, db: Session = Depends(get_db_session)):
+async def get_chat_log_messages(chat_log_id: int, request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
-    chat_messages = get_chat_messages_for_log(user.id, chat_log_id, db)
+    chat_messages = db.get_chat_messages_for_log(user.id, chat_log_id)
 
     return [chat_message_to_dict(chat_message) for chat_message in chat_messages]
 
 
 @router.post("/new-chat")
-async def new_chat(request: Request, db: Session = Depends(get_db_session)):
+async def new_chat(request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
-    chat_log = create_chat_log(user.id, db)
+    chat_log = db.create_chat_log(user.id)
 
     return chat_log_to_dict(chat_log)
 
 
 @router.delete("/delete-chat/{chat_log_id}")
-async def delete_chat(chat_log_id: int, request: Request, db: Session = Depends(get_db_session)):
+async def delete_chat(chat_log_id: int, request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
-    chat_log = get_chat_log_for_user(user.id, chat_log_id, db)
+    chat_log = db.get_chat_log_for_user(user.id, chat_log_id)
     if chat_log:
-        delete_chat_log(chat_log, db)
+        db.delete_chat_log(chat_log)
         return {"message": "Chat log deleted successfully"}
     else:
         raise HTTPException(status_code=404, detail="Chat log not found")
@@ -230,7 +229,7 @@ async def handle_chat_messages(websocket: WebSocket, chat_log_id, db):
                 })
 
                 # Save response in database
-                update_chat_message(chat_message, db)
+                db.update_chat_message(chat_message)
 
     except Exception as e:
         print(e)
@@ -238,7 +237,7 @@ async def handle_chat_messages(websocket: WebSocket, chat_log_id, db):
 
 
 @router.websocket("/ws/chat/{chat_log_id}")
-async def chat(chat_log_id: int, websocket: WebSocket, db: Session = Depends(get_db_session)):
+async def chat(chat_log_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB)):
     await websocket.accept()
 
     try:
@@ -246,7 +245,7 @@ async def chat(chat_log_id: int, websocket: WebSocket, db: Session = Depends(get
 
         chat_log = None
         if chat_log_id:
-            chat_log = get_chat_log_for_user(user.id, chat_log_id, db)
+            chat_log = db.get_chat_log_for_user(user.id, chat_log_id)
             if not chat_log:
                 raise HTTPException(status_code=400, detail=f"{chat_log_id} does not exist or is not owned by you")
 
@@ -263,7 +262,7 @@ async def chat(chat_log_id: int, websocket: WebSocket, db: Session = Depends(get
             prompt = await websocket.receive_text()
 
             # Save ChatMessage with empty response in database
-            chat_message = add_chat_message(chat_log.id, prompt, "", db)
+            chat_message = db.add_chat_message(chat_log.id, prompt, "")
             chat_logs_dict[chat_log_id][chat_message.id] = chat_message
 
             # Send work to LLM process
@@ -315,7 +314,8 @@ def chat_bot_pipeline(work_queue, chat_logs_dict):
 
         messages = [
             {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
-            {"role": "user", "content": "Who are you?"},
+            #{"role": "user", "content": "Who are you?"},
+            {"role": "user", "content": user_message},
         ]
 
         prompt = pipe.tokenizer.apply_chat_template(
