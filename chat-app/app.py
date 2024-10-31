@@ -162,6 +162,10 @@ chat_token_queues_dict = None
 chat_bot_prompts_queue = None
 
 
+# XXX: Could use a selector with multiprocessing.Pipe's to avoid the
+# asyncio.sleep(.1)'s, but this would be a lot more work for perf gain we don't
+# currently need. But we should mention this under load testing/expansion to more users
+# sections of reports.
 async def handle_chat_tokens(websocket: WebSocket, chat_id, user_id, db):
     try:
         token_queue = chat_token_queues_dict[chat_id]
