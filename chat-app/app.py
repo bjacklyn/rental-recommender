@@ -3,6 +3,7 @@ import json
 import multiprocessing
 import os
 
+from chatbot import ChatBot
 from db import ChatDB, Chat, ChatMessage, User
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,12 +11,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from queue import Empty
-from sqlalchemy.orm import Session
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers import LlamaForCausalLM, LlamaTokenizer
-from transformers import pipeline, TextStreamer, TextIteratorStreamer
-import time
-import torch
 
 app = FastAPI()
 
@@ -157,17 +152,6 @@ async def delete_chat(chat_id: int, request: Request, db: ChatDB = Depends(ChatD
         raise HTTPException(status_code=404, detail="Chat not found")
 
 
-class TokenQueueStreamer(TextStreamer):
-    def __init__(self, token_queue, chat_message_id, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.token_queue = token_queue
-        self.chat_message_id = chat_message_id
-
-    def on_finalized_text(self, printable_text, stream_end: bool = False):
-        if printable_text or stream_end:
-            self.token_queue.put((self.chat_message_id, printable_text, stream_end))
-
-
 # Shared manager for handling user queues
 manager = None
 
@@ -243,8 +227,6 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
             # Send chat_message json back to user
             await websocket.send_text(f"{chat_message.id}:0:{json.dumps(chat_message_to_dict(chat_message))}")
 
-            print("ok")
-
             # Send work to LLM process
             work_queue.put((prompt, chat_id, chat_message.id))
 
@@ -263,81 +245,24 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
                 del chats_dict[chat_id]["token_queue"]
 
 
-app.include_router(router)
-
-chatbot_process = None
-
-
-def chat_bot_pipeline(work_queue, chats_dict):
-    model_id = "meta-llama/Llama-3.2-1B-Instruct"
-
-    print(model_id)
-
-    pipe = pipeline(
-        "text-generation",
-        model=model_id,
-        torch_dtype=torch.bfloat16,
-        device=torch.device('cuda', index=0),
-#        device_map="auto",
-    )
-
-    while True:
-        user_message, chat_id, chat_message_id = work_queue.get()
-        if chat_message_id is None:  # Exit signal
-            break
-
-        print("Working on: " + str(chat_id) + ". " + user_message)
-
-        token_queue = chats_dict[chat_id]["token_queue"]
-
-        token_queue_streamer = TokenQueueStreamer(token_queue, chat_message_id, pipe.tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
-
-        messages = [
-            {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
-            #{"role": "user", "content": "Who are you?"},
-            {"role": "user", "content": user_message},
-        ]
-
-        prompt = pipe.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        )
-
-        terminators = [
-            pipe.tokenizer.eos_token_id,
-            pipe.tokenizer.convert_tokens_to_ids("<|eot_id|>")
-        ]
-
-        outputs = pipe(
-            prompt,
-            max_new_tokens=256,
-            eos_token_id=terminators,
-            do_sample=True,
-            temperature=0.6,
-            top_p=0.9,
-            pad_token_id = pipe.tokenizer.eos_token_id,
-            streamer=token_queue_streamer,
-        )
-
+chat_bot = None
 
 @app.on_event("startup")
 def startup_event() -> None:
-    global manager, chats_dict, work_queue, chatbot_process
+    global manager, chats_dict, work_queue, chat_bot
     manager = multiprocessing.Manager()
     chats_dict = manager.dict()
     work_queue = manager.Queue()
 
-    chatbot_process = multiprocessing.Process(target=chat_bot_pipeline, args=(work_queue,chats_dict,))
-    chatbot_process.start()
-    print("Chatbot process started.")
+    chat_bot = ChatBot(work_queue, chats_dict)
+    chat_bot.start()
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     global chatbot_process
-    if chatbot_process:
-        print("Shutting down chatbot process.")
-        chatbot_process.terminate()  # Gracefully terminate the worker process
-        chatbot_process.join()  # Wait for it to finish
-        print("Chatbot process terminated.")
+    if chat_bot:
+        chat_bot.stop()
+
+
+app.include_router(router)
