@@ -45,6 +45,7 @@ class ChatBot:
             chat_token_queues_dict: dict of chat_id to corresponding token_queue to push tokens to
             chat_bot_prompts_queue: queue of ChatBotPrompts for the LLM to respond to
         """
+        self.chat_bot_prompts_queue = chat_bot_prompts_queue
         self.chatbot_process = multiprocessing.Process(target=self.chat_bot_pipeline, args=(chat_token_queues_dict, chat_bot_prompts_queue))
 
 
@@ -55,6 +56,7 @@ class ChatBot:
 
     def stop(self):
         print("Shutting down chatbot process.")
+        self.chat_bot_prompts_queue.put(None) # Signal worker it should exit
         self.chatbot_process.terminate()  # Gracefully terminate the worker process
         self.chatbot_process.join()  # Wait for it to finish
         print("Chatbot process terminated.")
