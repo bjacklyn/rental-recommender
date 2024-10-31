@@ -1,16 +1,31 @@
-FROM python:3-alpine
+# Stage 1: Build the React frontend app
+FROM node:14 AS frontend_build
+WORKDIR /chat-app
+COPY ./frontend/package.json ./frontend/package-lock.json ./
+RUN npm install
+COPY ./frontend ./
+RUN npm run build
 
+# Stage 2: Serve the app with the FastAPI backend
+
+FROM python:3.12
+
+# Install LLM dependencies
+RUN python3 -m pip install \
+  torch \
+  transformers
+
+# Install backend web application dependencies
 RUN python3 -m pip install \
   fastapi \
   sqlalchemy \
   uvicorn
 
-RUN mkdir /opt/chat-app
-COPY app.py /opt/chat-app/app.py
-COPY db.py /opt/chat-app/db.py
+WORKDIR /chat-app
 
-RUN mkdir /opt/chat-app/static
-COPY static/script.js /opt/chat-app/static/script.js
-COPY static/style.css /opt/chat-app/static/style.css
+COPY backend/meta-llama ./meta-llama
+COPY --from=frontend_build /chat-app/build ./build
+COPY backend/app.py backend/chatbot.py backend/db.py ./
 
-WORKDIR /opt/chat-app
+ENV DEV_MODE=true
+CMD ["uvicorn", "app:app"]
