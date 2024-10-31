@@ -109,7 +109,7 @@ const ChatMessages = () => {
         }
 
         const fetchChatMessages = async () => {
-            const response = await fetch(`http://localhost:8000/chat-app/get-chat-messages/${activeChatId}`, {
+            const response = await fetch(`http://localhost:8000/chat-app/api/get-chat-messages/${activeChatId}`, {
                 method: 'GET',
 //                credentials: 'include',
                 headers: {
@@ -140,7 +140,7 @@ const ChatMessages = () => {
 
         // If no active chat ID, create a new chat
         if (!activeChatId) {
-            const response = await fetch('http://localhost:8000/chat-app/new-chat', {
+            const response = await fetch('http://localhost:8000/chat-app/api/new-chat', {
                 method: 'POST',
 //                credentials: 'include', // Include cookies for authentication
                 headers: {

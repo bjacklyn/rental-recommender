@@ -34,49 +34,12 @@ if is_dev:
     )
 
 
-# Mount static files for CSS and JS (same as before)
-app.mount("/chat-app/static", StaticFiles(directory="static"), name="static")
-
 # Create the database table
 ChatDB.create_tables()
 
 # Create the FastAPI Router
 router = APIRouter(prefix="/chat-app")
 
-
-@router.get("/", response_class=HTMLResponse)
-async def get_chat_interface():
-    return """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="/chat-app/static/style.css">
-        <title>Chatbot</title>
-    </head>
-    <body>
-        <div id="chat-interface">
-            <h1>Chatbot</h1>
-            <div id="old-chats">
-                <h2>Old Chats</h2>
-                <ul id="chat-list">
-                    <li onclick="loadChat('chat_1')">Chat 1</li>
-                    <li onclick="loadChat('chat_2')">Chat 2</li>
-                </ul>
-            </div>
-            <div id="new-chat">
-                <h2>New Chat</h2>
-                <button onclick="startNewChat()">Start New Chat</button>
-                <div id="chat-output"></div>
-                <textarea id="user-input" placeholder="Type your message..."></textarea>
-                <button onclick="sendMessage()">Send</button>
-            </div>
-        </div>
-        <script src="/chat-app/static/script.js"></script>
-    </body>
-    </html>
-    """
 
 async def get_user(request: Request, db: ChatDB) -> User:
     x_auth_request_user_header = "x-auth-request-user"
@@ -100,6 +63,7 @@ def chat_to_dict(chat: Chat):
         "created_at": chat.created_at.isoformat(),
     }
 
+
 def chat_message_to_dict(chat_message: ChatMessage):
     return {
         "id": chat_message.id,
@@ -110,7 +74,7 @@ def chat_message_to_dict(chat_message: ChatMessage):
     }
 
 
-@router.get("/get-chats")
+@router.get("/api/get-chats")
 async def get_chats(request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
@@ -122,7 +86,7 @@ async def get_chats(request: Request, db: ChatDB = Depends(ChatDB)):
     }
 
 
-@router.get("/get-chat-messages/{chat_id}")
+@router.get("/api/get-chat-messages/{chat_id}")
 async def get_chat_messages(chat_id: int, request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
@@ -131,7 +95,7 @@ async def get_chat_messages(chat_id: int, request: Request, db: ChatDB = Depends
     return [chat_message_to_dict(chat_message) for chat_message in chat_messages]
 
 
-@router.post("/new-chat")
+@router.post("/api/new-chat")
 async def new_chat(request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
@@ -140,7 +104,7 @@ async def new_chat(request: Request, db: ChatDB = Depends(ChatDB)):
     return chat_to_dict(chat)
 
 
-@router.delete("/delete-chat/{chat_id}")
+@router.delete("/api/delete-chat/{chat_id}")
 async def delete_chat(chat_id: int, request: Request, db: ChatDB = Depends(ChatDB)):
     user = await get_user(request, db)
 
@@ -266,3 +230,7 @@ async def shutdown_event():
 
 
 app.include_router(router)
+
+# Mount static files for CSS and JS (same as before)
+# Must be mounted _after_ the router or static routes will override api routes
+app.mount("/chat-app", StaticFiles(directory="static", html=True), name="static")

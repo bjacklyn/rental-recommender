@@ -8,7 +8,7 @@ const Chats = ({ onSelectChat }) => {
 
     useEffect(() => {
         const fetchChats = async () => {
-            const response = await fetch('http://localhost:8000/chat-app/get-chats');
+            const response = await fetch('http://localhost:8000/chat-app/api/get-chats');
             const data = await response.json();
             const sortedChats = data.chats.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             dispatch(setChats(sortedChats));
@@ -23,7 +23,7 @@ const Chats = ({ onSelectChat }) => {
     };
 
     const handleNewChat = async () => {
-        const response = await fetch('http://localhost:8000/chat-app/new-chat', {
+        const response = await fetch('http://localhost:8000/chat-app/api/new-chat', {
             method: 'POST',
 //            credentials: 'include',
             headers: {
@@ -41,7 +41,7 @@ const Chats = ({ onSelectChat }) => {
     const handleDeleteChat = async (event, chatId) => {
         event.stopPropagation(); // Prevent the click from bubbling up
 
-        const response = await fetch(`http://localhost:8000/chat-app/delete-chat/${chatId}`, {
+        const response = await fetch(`http://localhost:8000/chat-app/api/delete-chat/${chatId}`, {
             method: 'DELETE',
 //            credentials: 'include',
         });
