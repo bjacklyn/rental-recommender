@@ -233,4 +233,4 @@ app.include_router(router)
 
 # Mount static files for CSS and JS (same as before)
 # Must be mounted _after_ the router or static routes will override api routes
-app.mount("/chat-app", StaticFiles(directory="static", html=True), name="static")
+app.mount("/chat-app", StaticFiles(directory="build", html=True), name="build")
