@@ -43,51 +43,44 @@ const ChatMessages = () => {
         };
 
         ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-
-            if (message.type !== "initial" && message.type !== "partial" && message.type !== "complete") {
-                logError("Unknown message type received..", message);
+            const message_splits = event.data.split(':');
+            if (message_splits.length < 3) {
+                logError("Unknown message is not formatted as expected", event.data);
                 return;
             }
 
-            if (message.type === "initial") {
+            const message_id = Number(message_splits[0]);
+            const message_count = Number(message_splits[1]);
+            const message_text = message_splits.slice(2).join(':');
+
+            // The initial message contains the chat_message in json format
+            if (message_count === 0) {
+                var message = JSON.parse(message_text);
+                message["count"] = message_count;
                 setMessages((prevMessages) => mergeChatMessages(prevMessages, [message], activeChatId));
                 return;
             }
 
             setMessages((prevMessages) => {
-                const existingMessageIndex = prevMessages.findIndex(msg => msg.id === message.id);
+                const existingMessageIndex = prevMessages.findLastIndex(msg => msg.id === message_id);
                 if (existingMessageIndex <= -1) {
-                    logError("Unknown message received from websocket does not match any existing message..", message);
+                    logError("Unknown message received from websocket does not match any existing message..", event.data);
                     return prevMessages;
                 }
 
                 var messageToUpdate = { ...prevMessages[existingMessageIndex] }; // Create a new object for message to force react to re-render
-                if (message.count === messageToUpdate.count) {
+                if (message_count === messageToUpdate.count) {
                     // Duplicate message..
-                    logError("Received duplicate websocket message", message, messageToUpdate);
+                    logError("Received duplicate websocket message", event.data, messageToUpdate);
                     return prevMessages;
-                } else if (message.count !== messageToUpdate.count + 1) {
+                } else if (message_count !== messageToUpdate.count + 1) {
                     // We missed a message..
-                    logError("We missed a websocket message..", message, messageToUpdate);
+                    logError("We missed a websocket message..", event.data, messageToUpdate);
                     return prevMessages;
                 }
 
-                // If we got here then this message is in fact the next expected message
-                if (message.type === "partial") {
-                    if (messageToUpdate.type !== "initial" && messageToUpdate.type !== "partial") {
-                        logError("Received partial message after completion..", message, messageToUpdate);
-                        return prevMessages;
-                    }
-
-                    messageToUpdate.type = message.type;
-                    messageToUpdate.count = message.count;
-                    messageToUpdate.response += message.response; // Append response
-                    console.log(message.response);
-                } else if (message.type === "complete") {
-                    delete messageToUpdate.type;
-                    delete messageToUpdate.count;
-                }
+                messageToUpdate.count = message_count;
+                messageToUpdate.response += message_text; // Append response
 
                 return [
                     ...prevMessages.slice(0, existingMessageIndex),
@@ -140,7 +133,7 @@ const ChatMessages = () => {
         // Reconnect WebSocket for the new chat
         connectWebSocket(activeChatId);
 
-    }, [activeChatId]); // Dependency array includes activeChatId
+    }, [activeChatId]); // Dependency array
 
     const sendMessage = async () => {
         if (!input) return;

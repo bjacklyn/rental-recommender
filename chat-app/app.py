@@ -1,4 +1,5 @@
 import asyncio
+import json
 import multiprocessing
 import os
 
@@ -163,7 +164,8 @@ class TokenQueueStreamer(TextStreamer):
         self.chat_message_id = chat_message_id
 
     def on_finalized_text(self, printable_text, stream_end: bool = False):
-        self.token_queue.put((self.chat_message_id, printable_text, stream_end))
+        if printable_text or stream_end:
+            self.token_queue.put((self.chat_message_id, printable_text, stream_end))
 
 
 # Shared manager for handling user queues
@@ -176,11 +178,11 @@ chats_dict = None
 work_queue = None
 
 
-async def handle_chat_messages(websocket: WebSocket, chat_id, user_id, db):
+async def handle_chat_tokens(websocket: WebSocket, chat_id, user_id, db):
     try:
         token_queue = chats_dict[chat_id]["token_queue"]
+        token_count = None
         chat_message = None
-        message_count = None
 
         while True:
             try:
@@ -194,31 +196,16 @@ async def handle_chat_messages(websocket: WebSocket, chat_id, user_id, db):
                 continue
 
             if not chat_message or token_chat_message_id != chat_message.id:
+                token_count = 1
                 chat_message = db.get_chat_message(token_chat_message_id)
-                message_count = 0
 
-                initial_chat_message_json = chat_message_to_dict(chat_message)
-                initial_chat_message_json["type"] = "initial"
-                initial_chat_message_json["count"] = message_count
-                await websocket.send_json(initial_chat_message_json)
+            await websocket.send_text(f"{chat_message.id}:{token_count}:{token}")
 
+            token_count += 1
             chat_message.response += token
-            message_count += 1
-            await websocket.send_json({
-                "id": chat_message.id,
-                "response": token,
-                "type": "partial",
-                "count": message_count,
-            })
+            print(f"{chat_message.id}:{token_count}:{token}")
 
             if is_last_token:
-                message_count += 1
-                await websocket.send_json({
-                    "id": chat_message.id,
-                    "type": "complete",
-                    "count": message_count,
-                })
-
                 # Save response in database
                 db.update_chat_message(chat_message)
 
@@ -244,7 +231,7 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
             chats_dict[chat_id] = manager.dict()
 
         chats_dict[chat_id]["token_queue"] = manager.Queue()
-        asyncio.create_task(handle_chat_messages(websocket, chat_id, user.id, db))
+        asyncio.create_task(handle_chat_tokens(websocket, chat_id, user.id, db))
 
         while True:
             # Receive a message from the client
@@ -252,6 +239,11 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
 
             # Save ChatMessage with empty response in database to get a chat_message.id
             chat_message = db.create_chat_message(chat.id, prompt, "")
+
+            # Send chat_message json back to user
+            await websocket.send_text(f"{chat_message.id}:0:{json.dumps(chat_message_to_dict(chat_message))}")
+
+            print("ok")
 
             # Send work to LLM process
             work_queue.put((prompt, chat_id, chat_message.id))
