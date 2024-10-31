@@ -7,6 +7,7 @@ Note: This will require first:
 - Pip installing the huggingface-cli
 - Accepting the terms and conditions for this model from facebook
 - `huggingface-cli login`
+- See https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct?library=transformers
 
 # Build:
 ```
