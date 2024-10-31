@@ -5,11 +5,9 @@ import os
 
 from chatbot import ChatBot, ChatBotPrompt
 from db import ChatDB, Chat, ChatMessage, User
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 from queue import Empty
 
 app = FastAPI()
