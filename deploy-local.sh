@@ -3,7 +3,7 @@
 # 1. Install the kubernetes control plane with `minikube` and enable GPU support
 # ================================================================================================
 # ================================================================================================
-minikube start  --driver docker --container-runtime docker --gpus all
+minikube start  --driver docker --container-runtime docker --gpus all --cpus 4 --memory 16392
 
 
 # 2. Nginx ingress
@@ -18,8 +18,10 @@ kubectl wait --namespace ingress-nginx \
   --selector=app.kubernetes.io/component=controller \
   --timeout=180s
 
-kubectl get svc -A
-#sleep 30
+
+export INGRESS_IP=$(kubectl get svc -A | grep ingress-nginx-controller | grep NodePort | tr -s ' ' | cut -d' ' -f4)
+
+echo "INGRESS_IP is: ${INGRESS_IP}"
 
 
 # 3. Authentication
@@ -50,7 +52,7 @@ kubectl wait --namespace auth \
 
 # Start the oauth-proxy
 kubectl apply -f auth/oauth-proxy/oauth-proxy-configmap.yaml
-kubectl apply -f auth/oauth-proxy/oauth-proxy-deployment.yaml
+cat auth/oauth-proxy/oauth-proxy-deployment.yaml | envsubst | kubectl apply -f -
 kubectl apply -f auth/oauth-proxy/oauth-proxy-ingress.yaml
 sleep 1
 kubectl wait --namespace auth \
@@ -87,8 +89,8 @@ kubectl wait --namespace logging \
   --timeout=90s
 
 # Start fluent-bit
-#kubectl apply -f logging/fluent-bit/fluent-bit-configmap.yaml
-#kubectl apply -f logging/fluent-bit/fluent-bit-daemonset.yaml
+kubectl apply -f logging/fluent-bit/fluent-bit-configmap.yaml
+kubectl apply -f logging/fluent-bit/fluent-bit-daemonset.yaml
 
 # Start kibana
 kubectl apply -f logging/kibana/kibana-configmap.yaml

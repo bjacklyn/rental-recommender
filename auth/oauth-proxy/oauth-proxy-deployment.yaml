@@ -29,7 +29,7 @@ spec:
         app: oauth-proxy
     spec:
       hostAliases:
-      - ip: "10.96.239.200"
+      - ip: "$INGRESS_IP"
         hostnames:
           - "houseproject.internal"
       volumes:
