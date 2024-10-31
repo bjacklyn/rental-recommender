@@ -19,7 +19,8 @@ RUN python3 -m pip install \
 RUN python3 -m pip install \
   fastapi \
   sqlalchemy \
-  uvicorn
+  uvicorn \
+  websockets
 
 WORKDIR /chat-app
 
