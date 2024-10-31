@@ -1,4 +1,4 @@
-# houseproject
+# Rental Recommender
 
 ## Deploy script:
 ```
@@ -12,7 +12,7 @@ Manual instructions below shouldn't be needed..
 
 ---
 
-## Setup Instructions
+## Old Setup Instructions
 
 1. Create kind cluster with nginx ingress support
 ```
