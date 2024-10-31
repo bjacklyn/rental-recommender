@@ -18,6 +18,8 @@ spec:
         volumeMounts:
           - name: varlogpods
             mountPath: /var/log/pods
+          - name: varlibdockercontainers
+            mountPath: /var/lib/docker/containers
           - name: config
             mountPath: /fluent-bit/etc/fluent-bit.conf
             subPath: fluent-bit.conf
@@ -30,6 +32,9 @@ spec:
         - name: varlogpods
           hostPath:
             path: /var/log/pods
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
         - name: config
           configMap:
             name: fluent-bit-config

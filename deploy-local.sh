@@ -1,39 +1,15 @@
 #!/bin/bash -x
 
-# 1. Install the kubernetes control plane with `kind`
+# 1. Install the kubernetes control plane with `minikube` and enable GPU support
 # ================================================================================================
 # ================================================================================================
-cat <<EOF | kind create cluster --config=-
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
-  extraPortMappings:
-  - containerPort: 80
-    hostPort: 80
-    protocol: TCP
-  - containerPort: 443
-    hostPort: 443
-    protocol: TCP
-  extraMounts:
-  - hostPath: /var/log/pods
-    containerPath: /var/log/pods
-    readOnly: false
-    selinuxRelabel: false
-    propagation: Bidirectional
-EOF
+minikube start  --driver docker --container-runtime docker --gpus all
 
 
 # 2. Nginx ingress
 # ================================================================================================
 # ================================================================================================
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+minikube addons enable ingress
 
 # Wait for nginx ingress to be ready:
 sleep 1
@@ -45,6 +21,7 @@ kubectl wait --namespace ingress-nginx \
 kubectl get svc -A
 #sleep 30
 
+
 # 3. Authentication
 # ================================================================================================
 # ================================================================================================
@@ -52,7 +29,7 @@ kubectl apply -f auth/auth-namespace.yaml
 
 # First build the keycloak database docker image with database auto-init scripts
 docker build --tag keycloak-postgresdb:1.0 auth/keycloak-postgresdb
-kind load docker-image keycloak-postgresdb:1.0
+minikube image load keycloak-postgresdb:1.0
 
 # Start the keycloak database
 kubectl apply -f auth/keycloak-postgresdb/keycloak-postgresdb-deployment.yaml
@@ -110,8 +87,8 @@ kubectl wait --namespace logging \
   --timeout=90s
 
 # Start fluent-bit
-kubectl apply -f logging/fluent-bit/fluent-bit-configmap.yaml
-kubectl apply -f logging/fluent-bit/fluent-bit-daemonset.yaml
+#kubectl apply -f logging/fluent-bit/fluent-bit-configmap.yaml
+#kubectl apply -f logging/fluent-bit/fluent-bit-daemonset.yaml
 
 # Start kibana
 kubectl apply -f logging/kibana/kibana-configmap.yaml
@@ -150,7 +127,7 @@ kubectl wait --namespace monitoring \
 
 # Start grafana
 docker build --tag grafana-init-container:1.0 monitoring/grafana
-kind load docker-image grafana-init-container:1.0
+minikube image load grafana-init-container:1.0
 
 kubectl apply -f monitoring/grafana/grafana-configmap.yaml
 kubectl apply -f monitoring/grafana/grafana-deployment.yaml
@@ -160,3 +137,12 @@ kubectl wait --namespace monitoring \
   --for=condition=ready pod \
   --selector=app=grafana \
   --timeout=90s
+
+
+# Tell user to setup tunneling
+# ================================================================================================
+# ================================================================================================
+echo ""
+echo "================================================================================================"
+echo "You must run 'minikube tunnel' for the k8s services to be available at http://localhost/<svc>!"
+echo "================================================================================================"
