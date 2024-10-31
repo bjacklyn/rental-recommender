@@ -3,7 +3,7 @@ import json
 import multiprocessing
 import os
 
-from chatbot import ChatBot
+from chatbot import ChatBot, ChatBotPrompt
 from db import ChatDB, Chat, ChatMessage, User
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -155,16 +155,16 @@ async def delete_chat(chat_id: int, request: Request, db: ChatDB = Depends(ChatD
 # Shared manager for handling user queues
 manager = None
 
-# Dictionary to hold chat messages
-chats_dict = None
+# Dictionary to hold chat id to corresponding token_queue
+chat_token_queues_dict = None
 
-# Queues for managing user prompts
-work_queue = None
+# Queues for handling chat bot prompts
+chat_bot_prompts_queue = None
 
 
 async def handle_chat_tokens(websocket: WebSocket, chat_id, user_id, db):
     try:
-        token_queue = chats_dict[chat_id]["token_queue"]
+        token_queue = chat_token_queues_dict[chat_id]
         token_count = None
         chat_message = None
 
@@ -211,10 +211,7 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
             if not chat:
                 raise HTTPException(status_code=400, detail=f"{chat_id} does not exist or is not owned by you")
 
-        if chat_id not in chats_dict:
-            chats_dict[chat_id] = manager.dict()
-
-        chats_dict[chat_id]["token_queue"] = manager.Queue()
+        chat_token_queues_dict[chat_id] = manager.Queue()
         asyncio.create_task(handle_chat_tokens(websocket, chat_id, user.id, db))
 
         while True:
@@ -227,8 +224,8 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
             # Send chat_message json back to user
             await websocket.send_text(f"{chat_message.id}:0:{json.dumps(chat_message_to_dict(chat_message))}")
 
-            # Send work to LLM process
-            work_queue.put((prompt, chat_id, chat_message.id))
+            # Put chat bot prompt in queue for LLM to process
+            chat_bot_prompts_queue.put(ChatBotPrompt(prompt, chat_id, chat_message.id))
 
     except WebSocketDisconnect:
         print("Client disconnected")
@@ -239,22 +236,21 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
         })
         await websocket.close()  # Close on unexpected error
     finally:
-        if chat_id in chats_dict:
-            if "token_queue" in chats_dict[chat_id]:
-                chats_dict[chat_id]["token_queue"].put((None, None, None))
-                del chats_dict[chat_id]["token_queue"]
+        if chat_id in chat_token_queues_dict:
+            chat_token_queues_dict[chat_id].put(None)
+            del chat_token_queues_dict[chat_id]
 
 
 chat_bot = None
 
 @app.on_event("startup")
 def startup_event() -> None:
-    global manager, chats_dict, work_queue, chat_bot
+    global manager, chat_token_queues_dict, chat_bot_prompts_queue, chat_bot
     manager = multiprocessing.Manager()
-    chats_dict = manager.dict()
-    work_queue = manager.Queue()
+    chat_token_queues_dict = manager.dict()
+    chat_bot_prompts_queue = manager.Queue()
 
-    chat_bot = ChatBot(work_queue, chats_dict)
+    chat_bot = ChatBot(chat_token_queues_dict, chat_bot_prompts_queue)
     chat_bot.start()
 
 
