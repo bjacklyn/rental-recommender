@@ -1,5 +1,17 @@
 # houseproject
 
+## Deploy script:
+```
+./deploy-local.sh
+```
+
+TODO: chat-app still not yet deployable in `kind` due to nvidia GPU requirement and k8s pain to configure GPU support.
+But you can run it manually using `docker run` (see README in chat-app/ dir).
+
+Manual instructions below shouldn't be needed..
+
+---
+
 ## Setup Instructions
 
 1. Create kind cluster with nginx ingress support
