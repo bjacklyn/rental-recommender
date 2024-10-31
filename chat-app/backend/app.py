@@ -205,7 +205,7 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
         await websocket.close()  # Close on unexpected error
     finally:
         if chat_id in chat_token_queues_dict:
-            chat_token_queues_dict[chat_id].put(None)
+            chat_token_queues_dict[chat_id].put((None, None, None))
             del chat_token_queues_dict[chat_id]
 
 
