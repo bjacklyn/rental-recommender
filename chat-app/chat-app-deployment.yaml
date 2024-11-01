@@ -26,15 +26,18 @@ spec:
       labels:
         app: chat-app
     spec:
-      hostAliases:
-      - ip: "10.96.115.109"
-        hostnames:
-          - "houseproject.internal"
+#      hostAliases:
+#      - ip: "10.96.246.222"
+#        hostnames:
+#          - "houseproject.internal"
       containers:
       - image: chat-app:1.0
         name: chat-app
         ports:
         - containerPort: 8000
         args: ["uvicorn", "app:app", "--host", "0.0.0.0"]
+        resources:
+          limits:
+            nvidia.com/gpu: 1
       dnsPolicy: ClusterFirst
       restartPolicy: Always
