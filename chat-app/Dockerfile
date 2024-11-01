@@ -28,5 +28,4 @@ COPY backend/meta-llama ./meta-llama
 COPY --from=frontend_build /chat-app/build ./build
 COPY backend/app.py backend/chatbot.py backend/db.py ./
 
-ENV DEV_MODE=true
 CMD ["uvicorn", "app:app"]

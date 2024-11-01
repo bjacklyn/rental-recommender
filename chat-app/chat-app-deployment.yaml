@@ -31,7 +31,7 @@ spec:
 #        hostnames:
 #          - "houseproject.internal"
       containers:
-      - image: chat-app:1.0
+      - image: localhost:5000/chat-app:1.0
         name: chat-app
         ports:
         - containerPort: 8000
@@ -39,5 +39,6 @@ spec:
         resources:
           limits:
             nvidia.com/gpu: 1
+        imagePullPolicy: Always
       dnsPolicy: ClusterFirst
       restartPolicy: Always
