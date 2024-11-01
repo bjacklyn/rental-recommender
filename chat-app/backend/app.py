@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from queue import Empty
 
-app = FastAPI()
+app = FastAPI(root_path="/chat-app")
 
 # Check if the app is in development mode
 is_dev = os.getenv("DEV_MODE", "false").lower() == "true"
@@ -36,7 +36,7 @@ if is_dev:
 ChatDB.create_tables()
 
 # Create the FastAPI Router
-router = APIRouter(prefix="/chat-app")
+router = APIRouter()
 
 
 async def get_user(request: Request, db: ChatDB) -> User:
@@ -231,4 +231,4 @@ app.include_router(router)
 
 # Mount static files for CSS and JS (same as before)
 # Must be mounted _after_ the router or static routes will override api routes
-app.mount("/chat-app", StaticFiles(directory="build", html=True), name="build")
+app.mount("/", StaticFiles(directory="build", html=True), name="build")
