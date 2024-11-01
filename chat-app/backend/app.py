@@ -9,8 +9,12 @@ from fastapi import APIRouter, Depends, HTTPException, FastAPI, Request, WebSock
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from queue import Empty
+from tracing import configure_tracer
 
 app = FastAPI(root_path="/chat-app")
+
+# Set up tracing with Jaeger
+configure_tracer(app)
 
 # Check if the app is in development mode
 is_dev = os.getenv("DEV_MODE", "false").lower() == "true"
