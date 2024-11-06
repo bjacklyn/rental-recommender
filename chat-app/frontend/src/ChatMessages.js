@@ -173,7 +173,10 @@ const ChatMessages = () => {
         <div className="chat-area">
             <div className="messages">
                 {messages.map((msg, index) => (
-                    <div key={index} className="message">{msg.response}</div>
+                    <div key={index} className="message">
+                        {msg.prompt && <div className="message-prompt">{msg.prompt}</div>}
+                        <div className="message-response">{msg.response}</div>
+                    </div>
                 ))}
             </div>
             <input
