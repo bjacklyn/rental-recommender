@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field, validator
 from typing import Optional, List, Union
 from datetime import date, datetime
 
+#TODO : Fix validations for query parameters and response data fields.
+
 # Model for Query Parameters with Data Cleaning
 class PropertyQueryParams(BaseModel):
     city: Optional[str] = None
