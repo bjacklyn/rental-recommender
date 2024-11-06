@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import os
 
 # Load environment variables from .env file
-load_dotenv(dotenv_path=".env")
+load_dotenv("./.env")
 
 class Settings(BaseSettings):
     mongodb_url: str = os.getenv("MONGODB_URL")
