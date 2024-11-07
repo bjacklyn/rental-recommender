@@ -54,8 +54,8 @@ COPY public.associated_policy (policy_id, associated_policy_id) FROM stdin;
 --
 
 COPY public.realm (id, access_code_lifespan, user_action_lifespan, access_token_lifespan, account_theme, admin_theme, email_theme, enabled, events_enabled, events_expiration, login_theme, name, not_before, password_policy, registration_allowed, remember_me, reset_password_allowed, social, ssl_required, sso_idle_timeout, sso_max_lifespan, update_profile_on_soc_login, verify_email, master_admin_client, login_lifespan, internationalization_enabled, default_locale, reg_email_as_username, admin_events_enabled, admin_events_details_enabled, edit_username_allowed, otp_policy_counter, otp_policy_window, otp_policy_period, otp_policy_digits, otp_policy_alg, otp_policy_type, browser_flow, registration_flow, direct_grant_flow, reset_credentials_flow, client_auth_flow, offline_session_idle_timeout, revoke_refresh_token, access_token_life_implicit, login_with_email_allowed, duplicate_emails_allowed, docker_auth_flow, refresh_token_max_reuse, allow_user_managed_access, sso_max_lifespan_remember_me, sso_idle_timeout_remember_me, default_role) FROM stdin;
-d954e40a-95eb-4c8d-bbe6-a1de520c31a8	60	300	300	\N	\N	\N	t	f	0	\N	houseproject	0	\N	t	t	t	f	EXTERNAL	1800	36000	f	f	8b4a4b34-f1da-419c-aa6f-62ec476a77e2	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	2fc6be72-9b7a-4c0c-a7cf-e57c395d7d60	cda2f3b5-7631-4f6f-a35d-45eb6be3d5cf	921ad445-fa6a-49a1-ae44-459d424b3a1e	c27cbc96-3cc6-485a-816f-bf493f51c252	4743939c-ee3d-4323-9e15-77aa168c815c	2592000	f	900	t	f	775a1abb-8edb-440e-b121-fd49d66fa1ff	0	f	0	0	538419ab-6282-4178-8ca3-3ed943c4de09
 3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	60	300	60	\N	\N	\N	t	f	0	\N	master	0	\N	f	f	f	f	EXTERNAL	1800	36000	f	f	2610030b-00c5-4f55-aaf5-c19053e277eb	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	d3c96e7f-7bfc-44bd-a30a-12e380558ca3	57c16665-3935-409c-93de-ffcde5b9840e	6504ae30-1efb-4dbd-afbd-80c298defa1c	07f9ff80-11fb-4338-9a8e-c3d0416bee55	8cdd92f2-d4c0-4619-8f71-3f918bd8ce61	2592000	f	900	t	f	e2fbaa18-d4d4-48a2-9fdb-4f21f9224745	0	f	0	0	3edc0499-ea4d-423d-a6a1-179788bf8222
+d954e40a-95eb-4c8d-bbe6-a1de520c31a8	60	300	300	\N	\N	\N	t	f	0	\N	houseproject	0	\N	t	t	t	f	EXTERNAL	1800	36000	f	f	8b4a4b34-f1da-419c-aa6f-62ec476a77e2	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	859cf67c-f17f-4089-8fc4-a7930ac00196	cda2f3b5-7631-4f6f-a35d-45eb6be3d5cf	921ad445-fa6a-49a1-ae44-459d424b3a1e	c27cbc96-3cc6-485a-816f-bf493f51c252	4743939c-ee3d-4323-9e15-77aa168c815c	2592000	f	900	t	f	775a1abb-8edb-440e-b121-fd49d66fa1ff	0	f	0	0	538419ab-6282-4178-8ca3-3ed943c4de09
 \.
 
 
@@ -100,6 +100,16 @@ f0bc1547-4e52-45f7-aa73-6bea84fe6ea0	Verify Existing Account by Re-authenticatio
 c3060eb4-483a-4547-b602-45ffe5beeec3	First broker login - Conditional OTP	Flow to determine if the OTP is required for the authentication	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	basic-flow	f	t
 12051288-9059-49db-8ea4-53ce16253abe	saml ecp	SAML ECP Profile Authentication Flow	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	basic-flow	t	t
 775a1abb-8edb-440e-b121-fd49d66fa1ff	docker auth	Used by Docker clients to authenticate against the IDP	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	basic-flow	t	t
+86201af6-cc81-4331-a925-d2df8749aca3	browser-mfa	browser based authentication	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	basic-flow	t	f
+6694aa76-604c-4034-b68a-832c6466eff0	browser-mfa forms	Username, password, otp and other auth forms.	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	basic-flow	f	f
+4a755fac-2a2c-46b0-88a4-7b93ea584f8d	browser-mfa Browser - Conditional OTP	Flow to determine if the OTP is required for the authentication	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	basic-flow	f	f
+27b1a802-047e-4248-a915-1856950ef8ff	browser-mfa identity provider redirector		3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	basic-flow	f	f
+5bdffb4d-1f61-4745-9bca-60634473766c	browser-mfa Identity Provider Redirector - Conditional OTP		3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	basic-flow	f	f
+859cf67c-f17f-4089-8fc4-a7930ac00196	browser-mfa	browser based authentication	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	basic-flow	t	f
+8a59b1ce-eac6-4b89-b84a-06e4ed84b376	browser-mfa forms	Username, password, otp and other auth forms.	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	basic-flow	f	f
+630b4222-0889-44bd-83da-9d67af4c96a9	browser-mfa Browser - Conditional OTP	Flow to determine if the OTP is required for the authentication	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	basic-flow	f	f
+714b15bf-7130-497e-a424-6abfd55abf82	browser-mfa identity provider redirector		d954e40a-95eb-4c8d-bbe6-a1de520c31a8	basic-flow	f	f
+50577d9e-c20b-4fc8-9f4d-49454b61b55a	browser-mfa Identity Provider Redirector - Conditional OTP		d954e40a-95eb-4c8d-bbe6-a1de520c31a8	basic-flow	f	f
 \.
 
 
@@ -113,7 +123,6 @@ COPY public.authentication_execution (id, alias, authenticator, realm_id, flow_i
 902b841a-bac9-43dd-b8ef-5393f84a0f32	\N	identity-provider-redirector	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	d3c96e7f-7bfc-44bd-a30a-12e380558ca3	2	25	f	\N	\N
 37503a72-c507-41b1-a002-332523538a2d	\N	\N	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	d3c96e7f-7bfc-44bd-a30a-12e380558ca3	2	30	t	61b1f702-5bca-4735-9fc1-6506039a9528	\N
 e9df2e7d-64f5-4689-baed-13cbdfac20ca	\N	auth-username-password-form	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	61b1f702-5bca-4735-9fc1-6506039a9528	0	10	f	\N	\N
-700e3a90-6db7-4972-ad18-7ef9bb18c556	\N	\N	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	61b1f702-5bca-4735-9fc1-6506039a9528	1	20	t	9aaebe5d-5aa6-4413-bbc5-43072b52eb46	\N
 cf4abcda-052c-442c-9f4f-0b5a71324e9f	\N	conditional-user-configured	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	9aaebe5d-5aa6-4413-bbc5-43072b52eb46	0	10	f	\N	\N
 03f82378-f9ea-4c89-9e99-b1c36bcbbc21	\N	auth-otp-form	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	9aaebe5d-5aa6-4413-bbc5-43072b52eb46	0	20	f	\N	\N
 b99592d1-077e-49c7-b485-0d8de936745e	\N	direct-grant-validate-username	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	6504ae30-1efb-4dbd-afbd-80c298defa1c	0	10	f	\N	\N
@@ -192,6 +201,29 @@ e157ed60-f3ac-495c-bd44-afaaf43389d5	\N	conditional-user-configured	d954e40a-95e
 2d1c058a-b887-45ae-a4f2-424a4c5912cc	\N	auth-otp-form	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	c3060eb4-483a-4547-b602-45ffe5beeec3	0	20	f	\N	\N
 5a1a0b6f-958a-4b74-822e-d65ec610afd8	\N	http-basic-authenticator	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	12051288-9059-49db-8ea4-53ce16253abe	0	10	f	\N	\N
 d0b1e029-0e4d-433d-a646-cef924ebfe88	\N	docker-http-basic-authenticator	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	775a1abb-8edb-440e-b121-fd49d66fa1ff	0	10	f	\N	\N
+700e3a90-6db7-4972-ad18-7ef9bb18c556	\N	\N	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	61b1f702-5bca-4735-9fc1-6506039a9528	0	20	t	9aaebe5d-5aa6-4413-bbc5-43072b52eb46	\N
+1b18ff8f-b762-4f1b-be1e-7ab3c6ea92d9	\N	auth-cookie	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	86201af6-cc81-4331-a925-d2df8749aca3	2	10	f	\N	\N
+127dfb73-ded7-4772-9169-50e2fef37a1d	\N	auth-username-password-form	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	6694aa76-604c-4034-b68a-832c6466eff0	0	10	f	\N	\N
+e8662d5f-8d87-4c3d-be03-a15967cbb638	\N	conditional-user-configured	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	4a755fac-2a2c-46b0-88a4-7b93ea584f8d	0	10	f	\N	\N
+77a6344d-9e78-43a4-b486-1e5f264ca127	\N	auth-otp-form	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	4a755fac-2a2c-46b0-88a4-7b93ea584f8d	0	20	f	\N	\N
+56f642a7-609f-4676-a596-069bf67077b0	\N	\N	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	6694aa76-604c-4034-b68a-832c6466eff0	0	20	t	4a755fac-2a2c-46b0-88a4-7b93ea584f8d	\N
+56328102-7abb-4ef5-8067-5cb91092fc73	\N	\N	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	86201af6-cc81-4331-a925-d2df8749aca3	2	30	t	6694aa76-604c-4034-b68a-832c6466eff0	\N
+f4e15127-1c15-477e-8442-6a40d545e64a	\N	\N	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	86201af6-cc81-4331-a925-d2df8749aca3	2	31	t	27b1a802-047e-4248-a915-1856950ef8ff	\N
+92026ca9-fd5d-4b9f-b201-ce9fa838dc5d	\N	identity-provider-redirector	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	27b1a802-047e-4248-a915-1856950ef8ff	0	0	f	\N	\N
+c735f4d5-916a-40cb-b335-69c34a10d4c0	\N	\N	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	27b1a802-047e-4248-a915-1856950ef8ff	0	1	t	5bdffb4d-1f61-4745-9bca-60634473766c	\N
+2e3eefec-67cb-4b7b-aed2-8c2b9370d06b	\N	conditional-user-configured	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	5bdffb4d-1f61-4745-9bca-60634473766c	0	0	f	\N	\N
+4d6f2b30-446e-466b-bc13-2aaa75afcfc3	\N	auth-otp-form	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	5bdffb4d-1f61-4745-9bca-60634473766c	0	1	f	\N	\N
+431ead73-4fad-4e50-9adf-112f268aec6c	\N	auth-cookie	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	859cf67c-f17f-4089-8fc4-a7930ac00196	2	10	f	\N	\N
+b96e17fb-8db4-48e7-a834-d8f1ca3a71b3	\N	auth-username-password-form	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	8a59b1ce-eac6-4b89-b84a-06e4ed84b376	0	10	f	\N	\N
+166aeb8d-edad-4ee2-8c14-f778d2ff5122	\N	conditional-user-configured	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	630b4222-0889-44bd-83da-9d67af4c96a9	0	10	f	\N	\N
+f9becf1b-80dd-40f2-a99f-03f021593256	\N	auth-otp-form	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	630b4222-0889-44bd-83da-9d67af4c96a9	0	20	f	\N	\N
+4148b0b1-2d90-4a76-aea9-cbd82e9ba4b4	\N	\N	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	859cf67c-f17f-4089-8fc4-a7930ac00196	2	30	t	8a59b1ce-eac6-4b89-b84a-06e4ed84b376	\N
+38b03539-2300-4825-8e64-d1e00e11da16	\N	\N	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	8a59b1ce-eac6-4b89-b84a-06e4ed84b376	0	20	t	630b4222-0889-44bd-83da-9d67af4c96a9	\N
+631f4ddb-e44c-4709-a806-3a5b19efcf60	\N	\N	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	859cf67c-f17f-4089-8fc4-a7930ac00196	2	31	t	714b15bf-7130-497e-a424-6abfd55abf82	\N
+90596b7f-4960-4f49-afa1-40e1c2ead60a	\N	identity-provider-redirector	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	714b15bf-7130-497e-a424-6abfd55abf82	0	0	f	\N	\N
+2011b12b-a7ea-40d6-bf7f-4f145ee1fb7d	\N	\N	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	714b15bf-7130-497e-a424-6abfd55abf82	0	1	t	50577d9e-c20b-4fc8-9f4d-49454b61b55a	\N
+a3d25d5d-7630-41e9-ba03-a83663931535	\N	conditional-user-configured	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	50577d9e-c20b-4fc8-9f4d-49454b61b55a	0	0	f	\N	\N
+0b34f9b2-c259-4da7-b2f0-89aa8446508e	\N	auth-otp-form	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	50577d9e-c20b-4fc8-9f4d-49454b61b55a	0	1	f	\N	\N
 \.
 
 
@@ -270,7 +302,7 @@ c6697c1f-2ead-4af7-b8cd-195dd0332614	pkce.code.challenge.method	S256
 51abee6f-2294-4cea-a78a-fbfd60c8fc07	backchannel.logout.session.required	true
 51abee6f-2294-4cea-a78a-fbfd60c8fc07	backchannel.logout.revoke.offline.tokens	false
 51abee6f-2294-4cea-a78a-fbfd60c8fc07	display.on.consent.screen	false
-51abee6f-2294-4cea-a78a-fbfd60c8fc07	post.logout.redirect.uris	http://houseproject.internal/*
+51abee6f-2294-4cea-a78a-fbfd60c8fc07	post.logout.redirect.uris	http://rentalrecommender.cloud/*
 \.
 
 
@@ -1196,6 +1228,7 @@ COPY public.group_role_mapping (role_id, group_id) FROM stdin;
 --
 
 COPY public.identity_provider (internal_id, enabled, provider_alias, provider_id, store_token, authenticate_by_default, realm_id, add_token_role, trust_email, first_broker_login_flow_id, post_broker_login_flow_id, provider_display_name, link_only) FROM stdin;
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	t	google	google	f	f	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	f	f	\N	\N	\N	f
 \.
 
 
@@ -1204,6 +1237,14 @@ COPY public.identity_provider (internal_id, enabled, provider_alias, provider_id
 --
 
 COPY public.identity_provider_config (identity_provider_id, value, name) FROM stdin;
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	false	hideOnLoginPage
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	102696895213-hillf27i2stlc8ma3dimve85dd29l1pj.apps.googleusercontent.com	clientId
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	false	acceptsPromptNoneForwardFromClient
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	false	disableUserInfo
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	LEGACY	syncMode
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	false	filteredByClaim
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	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	clientSecret
+828fcb4d-f79c-4988-9a7d-cc21d3665f7e	false	caseSensitiveOriginalUsername
 \.
 
 
@@ -1883,7 +1924,7 @@ e8fe6ba7-81c0-48c6-b3e5-6dc17c8c77fe	/realms/master/account/*
 eba96f4c-fc01-4e8b-b3af-e9f5a042f2b4	/realms/houseproject/account/*
 a8298116-778e-4155-8ed9-9454d57106ff	/realms/houseproject/account/*
 c6697c1f-2ead-4af7-b8cd-195dd0332614	/admin/houseproject/console/*
-51abee6f-2294-4cea-a78a-fbfd60c8fc07	http://houseproject.internal/*
+51abee6f-2294-4cea-a78a-fbfd60c8fc07	http://rentalrecommender.cloud/*
 \.
 
 
@@ -1902,7 +1943,6 @@ COPY public.required_action_config (required_action_id, value, name) FROM stdin;
 COPY public.required_action_provider (id, alias, name, realm_id, enabled, default_action, provider_id, priority) FROM stdin;
 cfd5b11b-0e4c-4763-884c-7608e4e0ea33	VERIFY_EMAIL	Verify Email	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	t	f	VERIFY_EMAIL	50
 1f7603ec-4de3-4e6c-8e76-8f3ca30379f6	UPDATE_PROFILE	Update Profile	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	t	f	UPDATE_PROFILE	40
-c3d0ae92-e641-4a30-894a-0b2308bf8b61	CONFIGURE_TOTP	Configure OTP	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	t	f	CONFIGURE_TOTP	10
 d20b3484-dd4c-4533-a113-c1e2a8c9ec75	UPDATE_PASSWORD	Update Password	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	t	f	UPDATE_PASSWORD	30
 76c3db5a-7843-4a7b-9ed2-8fabb5e64b71	TERMS_AND_CONDITIONS	Terms and Conditions	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	f	f	TERMS_AND_CONDITIONS	20
 0b1897bb-b477-4978-87f5-d22f45d134ec	delete_account	Delete Account	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	f	f	delete_account	60
@@ -1922,6 +1962,7 @@ e54b327c-495d-46fc-b33c-13bc12d52f75	TERMS_AND_CONDITIONS	Terms and Conditions	d
 ea91755a-ebcf-4047-90d2-a857af9068a2	webauthn-register	Webauthn Register	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	t	f	webauthn-register	70
 ab81c497-12af-459c-8552-d3fb48879a79	webauthn-register-passwordless	Webauthn Register Passwordless	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	t	f	webauthn-register-passwordless	80
 158b9331-f46e-4626-888b-5f09e8c823c3	VERIFY_PROFILE	Verify Profile	d954e40a-95eb-4c8d-bbe6-a1de520c31a8	t	f	VERIFY_PROFILE	90
+c3d0ae92-e641-4a30-894a-0b2308bf8b61	CONFIGURE_TOTP	Configure OTP	3e4b0bf0-9fb0-4b73-997f-e7d306a6c7b3	t	t	CONFIGURE_TOTP	10
 \.
 
 
