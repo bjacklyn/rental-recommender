@@ -26,10 +26,6 @@ spec:
       labels:
         app: chat-app
     spec:
-#      hostAliases:
-#      - ip: "10.96.246.222"
-#        hostnames:
-#          - "houseproject.internal"
       containers:
       - image: localhost:5000/chat-app:1.0
         name: chat-app

@@ -31,7 +31,7 @@ spec:
       hostAliases:
       - ip: "$INGRESS_IP"
         hostnames:
-          - "houseproject.internal"
+          - "rentalrecommender.cloud"
       volumes:
         - name: oauth2-proxy-config
           configMap:

@@ -24,7 +24,7 @@ data:
     http_address="0.0.0.0:4180"
     upstreams="file:///dev/null"
     email_domains=["*"]
-    oidc_issuer_url="http://houseproject.internal/keycloak/realms/houseproject"
+    oidc_issuer_url="http://rentalrecommender.cloud/keycloak/realms/houseproject"
     scope="openid"
     # pass_authorization_header=true
     # pass_access_token=true

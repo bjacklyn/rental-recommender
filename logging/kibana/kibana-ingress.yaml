@@ -8,7 +8,6 @@ metadata:
   namespace: logging
 spec:
   rules:
-#    - host: houseproject.internal
     - http:
         paths:
           - path: /kibana
