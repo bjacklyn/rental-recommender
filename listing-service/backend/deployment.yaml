@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: property-listings-api
+  labels:
+    app: property-listings-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: property-listings-api
+  template:
+    metadata:
+      labels:
+        app: property-listings-api
+    spec:
+      containers:
+      - name: property-listings-api
+        image: your-dockerhub-username/property-listings-api:latest
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: property-listings-api-config
+        env:
+        - name: MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: property-listings-api-secret
+              key: MONGODB_URL
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: property-listings-api-secret
+              key: DATABASE_NAME
+        - name: COLLECTION_NAME
+          valueFrom:
+            secretKeyRef:
+              name: property-listings-api-secret
+              key: COLLECTION_NAME
