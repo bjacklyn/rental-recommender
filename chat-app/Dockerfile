@@ -31,6 +31,7 @@ RUN python3 -m pip install \
   opentelemetry-instrumentation-requests \
   opentelemetry-exporter-otlp \
   psycopg2 \
+  pytest \
   sqlalchemy \
   uvicorn \
   websockets

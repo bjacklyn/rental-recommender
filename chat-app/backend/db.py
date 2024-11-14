@@ -1,11 +1,12 @@
 import os
+import sqlalchemy
 from datetime import datetime
 from pydantic import PostgresDsn
 from sqlalchemy import create_engine, Column, DateTime, ForeignKey, Integer, String, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session, sessionmaker
 
-Base = declarative_base()
+Base = sqlalchemy.orm.declarative_base()
 
 
 class User(Base):
