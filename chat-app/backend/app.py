@@ -13,8 +13,11 @@ from tracing import configure_tracer
 
 app = FastAPI(root_path="/chat-app")
 
-# Set up tracing with Jaeger
-configure_tracer(app)
+is_test = os.getenv("TEST_MODE", "false").lower() == "true"
+
+if not is_test:
+    # Set up tracing with Jaeger
+    configure_tracer(app)
 
 # Check if the app is in development mode
 is_dev = os.getenv("DEV_MODE", "false").lower() == "true"

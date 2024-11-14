@@ -36,8 +36,17 @@ class ChatMessage(Base):
 
 
 is_dev = os.getenv("DEV_MODE", "false").lower() == "true"
+is_test = os.getenv("TEST_MODE", "false").lower() == "true"
 if is_dev:
-    DATABASE_URL = "sqlite:///./chatbot.db"  # Use sqlite in development
+    if is_test:
+        database_filename = "chatbottest.db"
+        # Always run tests with fresh db
+        if os.path.exists(database_filename):
+            os.remove(database_filename)
+    else:
+        database_filename = "chatbot.db"
+
+    DATABASE_URL = f"sqlite:///./{database_filename}"  # Use sqlite in development
     connect_args = {"check_same_thread": False}
 else:
     DATABASE_URL = PostgresDsn.build(
