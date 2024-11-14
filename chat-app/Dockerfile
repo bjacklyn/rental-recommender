@@ -30,6 +30,7 @@ RUN python3 -m pip install \
   opentelemetry-instrumentation-fastapi \
   opentelemetry-instrumentation-requests \
   opentelemetry-exporter-otlp \
+  psycopg2 \
   sqlalchemy \
   uvicorn \
   websockets
