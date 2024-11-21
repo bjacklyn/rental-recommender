@@ -11,8 +11,8 @@ echo "INGRESS_IP is: ${INGRESS_IP}"
 kubectl apply -f auth/auth-namespace.yaml
 
 # First build the keycloak database docker image with database auto-init scripts
-docker build --tag localhost:32775/keycloak-postgresdb:1.0 auth/keycloak-postgresdb
-docker push localhost:32775/keycloak-postgresdb:1.0
+docker build --tag localhost:32770/keycloak-postgresdb:1.0 auth/keycloak-postgresdb
+docker push localhost:32770/keycloak-postgresdb:1.0
 
 # Start the keycloak database
 kubectl apply -f auth/keycloak-postgresdb/keycloak-postgresdb-deployment.yaml
@@ -109,8 +109,8 @@ kubectl wait --namespace monitoring \
   --timeout=90s
 
 # Start grafana
-docker build --tag localhost:32775/grafana-init-container:1.0 monitoring/grafana
-docker push localhost:32775/grafana-init-container:1.0
+docker build --tag localhost:32770/grafana-init-container:1.0 monitoring/grafana
+docker push localhost:32770/grafana-init-container:1.0
 
 kubectl apply -f monitoring/grafana/grafana-configmap.yaml
 kubectl apply -f monitoring/grafana/grafana-deployment.yaml
@@ -125,8 +125,10 @@ kubectl wait --namespace monitoring \
 # 5. Deploy chat-app
 # ================================================================================================
 # ================================================================================================
-docker build --tag localhost:32775/chat-app:1.0 chat-app
-docker push localhost:32775/chat-app:1.0
+kubectl apply -f chat-app/chat-app-postgresdb-deployment.yaml
+
+docker build --tag localhost:32770/chat-app:1.0 chat-app
+docker push localhost:32770/chat-app:1.0
 
 kubectl apply -f chat-app/chat-app-deployment.yaml
 kubectl apply -f chat-app/chat-app-ingress.yaml

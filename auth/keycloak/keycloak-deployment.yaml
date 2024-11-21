@@ -47,7 +47,7 @@ spec:
         name: keycloak
         ports:
         - containerPort: 8080
-        args: ["start-dev", "--hostname", "http://houseproject.internal/keycloak"]
+        args: ["start-dev", "--hostname", "http://rentalrecommender.cloud/keycloak"]
       dnsPolicy: ClusterFirst
       restartPolicy: Always
 

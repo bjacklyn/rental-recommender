@@ -68,6 +68,7 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 .messages {
@@ -77,12 +78,22 @@ body {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    background: #f9f9f9;
     flex-grow: 1;
+    min-height: 0;
 }
 
 .message {
     margin: 5px 0;
+}
+
+.message-prompt {
+    padding: 10px;
+}
+
+.message-response {
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
 }
 
 input {

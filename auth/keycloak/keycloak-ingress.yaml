@@ -9,7 +9,6 @@ metadata:
   namespace: auth
 spec:
   rules:
-#    - host: houseproject.internal
     - http:
         paths:
           - path: /keycloak(/|$)(.*)

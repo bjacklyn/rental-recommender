@@ -1,9 +1,12 @@
+import os
+import sqlalchemy
 from datetime import datetime
+from pydantic import PostgresDsn
 from sqlalchemy import create_engine, Column, DateTime, ForeignKey, Integer, String, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session, sessionmaker
 
-Base = declarative_base()
+Base = sqlalchemy.orm.declarative_base()
 
 
 class User(Base):
@@ -33,9 +36,30 @@ class ChatMessage(Base):
     chats = relationship("Chat", back_populates="chat_messages")  # Many-to-one relationship
 
 
-# TODO: Eventually use another database like postgres, but sqlite is good for development
-DATABASE_URL = "sqlite:///./chatbot.db"  # Adjust path as needed
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+is_dev = os.getenv("DEV_MODE", "false").lower() == "true"
+is_test = os.getenv("TEST_MODE", "false").lower() == "true"
+if is_dev:
+    if is_test:
+        database_filename = "chatbottest.db"
+        # Always run tests with fresh db
+        if os.path.exists(database_filename):
+            os.remove(database_filename)
+    else:
+        database_filename = "chatbot.db"
+
+    DATABASE_URL = f"sqlite:///./{database_filename}"  # Use sqlite in development
+    connect_args = {"check_same_thread": False}
+else:
+    DATABASE_URL = PostgresDsn.build(
+        scheme="postgresql",
+        username="admin",
+        password="admin",
+        host="chat-app-postgresdb",
+        path="chat-app",
+    ).unicode_string()
+    connect_args = {}
+
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

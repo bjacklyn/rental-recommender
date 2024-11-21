@@ -68,8 +68,10 @@ async def start_background_task():
 
 
 @router.get("/api/get-rental-recommendations/{listing_id}")
-async def get_chat_messages(listing_id: int, other_listing_ids: List[int] = Query(None)):
+async def get_rental_recommendations(listing_id: int, other_listing_ids: List[int] = Query(None)):
     # TODO: 1) Query listing-service for listing details with listing_id and other_listing_ids
     # TODO: 2) Run each listing through the clustering model inference
     # TODO: 3) Rank the clustered results and return them
     pass
+
+app.include_router(router)
