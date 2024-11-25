@@ -10,6 +10,7 @@ const ChatMessages = () => {
     const [messages, setMessages] = useState([]);
     const [isSocketOpen, setIsSocketOpen] = useState(false);
     const pendingMessageRef = useRef('');
+    const propertyIds = [1011101, 102, 103]; // Example list of property_ids
 
     const mergeChatMessages = (first, second, activeChatId) => {
         const messagesForActiveChatId = first.filter(item => item.chat_id === activeChatId);
@@ -138,6 +139,11 @@ const ChatMessages = () => {
     const sendMessage = async () => {
         if (!input) return;
 
+        const messagePayload = JSON.stringify({
+            prompt: input,
+            property_ids: propertyIds
+        });
+
         // If no active chat ID, create a new chat
         if (!activeChatId) {
             const response = await fetch('/chat-app/api/new-chat', {
@@ -154,9 +160,9 @@ const ChatMessages = () => {
 
         // Save the message if the socket is not open
         if (!isSocketOpen) {
-            pendingMessageRef.current = input; // Set the input as the pending message
+            pendingMessageRef.current = messagePayload; // Set the input as the pending message
         } else {
-            socket.send(input); // Send the message immediately if the socket is open
+            socket.send(messagePayload); // Send the message immediately if the socket is open
         }
 
         // Clear the input
