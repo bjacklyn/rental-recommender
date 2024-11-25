@@ -189,7 +189,12 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
 
         while True:
             # Receive a message from the client
-            prompt = await websocket.receive_text()
+            data = await websocket.receive_text()
+            prompt = data.get("prompt")
+            property_ids = data.get("property_ids")
+
+            if not prompt or not property_ids:
+                raise HTTPException(status_code=400, detail="Prompt and property_ids are required")
 
             # Save ChatMessage with empty response in database to get a chat_message.id
             chat_message = db.create_chat_message(chat.id, prompt, "")
@@ -198,7 +203,8 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
             await websocket.send_text(f"{chat_message.id}:0:{json.dumps(chat_message_to_dict(chat_message))}")
 
             # Put chat bot prompt in queue for LLM to process
-            chat_bot_prompts_queue.put(ChatBotPrompt(prompt, chat_id, chat_message.id))
+             # List of integers
+            chat_bot_prompts_queue.put(ChatBotPrompt(prompt, chat_id, chat_message.id, property_ids))
 
     except WebSocketDisconnect:
         print("Client disconnected")
