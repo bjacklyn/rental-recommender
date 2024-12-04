@@ -9,7 +9,7 @@ import requests
 
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 from collections import defaultdict
-from fastapi import APIRouter, FastAPI, Query, Request
+from fastapi import APIRouter, FastAPI, Query, Request, HTTPException
 from pathlib import Path
 from sklearn.cluster import KMeans
 from typing import List
@@ -48,31 +48,36 @@ def load_model(file_path):
 async def download_latest_model():
     global current_model, current_model_version
 
+    try:
+        # Get the latest file in S3 bucket
+        latest_file = get_latest_file()
+        if latest_file:
+            print(latest_file)
+            latest_file_version = latest_file["ETag"]
+            if latest_file_version != current_model_version:
+                s3_client.download_file(BUCKET_NAME, latest_file["Key"], str(TEMP_FILE_PATH))
+
+                # Load file from disk at TEMP_FILE_PATH and check if it loads successfully..
+                temp_model = load_model(TEMP_FILE_PATH)
+
+                os.replace(TEMP_FILE_PATH, CURRENT_FILE_PATH)
+                current_model_version = latest_file_version
+                current_model = temp_model
+
+                print("New model downloaded, and loaded.")
+            else:
+                print("Current model is up-to-date. No download needed.")
+
+    except (NoCredentialsError, PartialCredentialsError) as e:
+        print("Credentials error: ", e)
+    except Exception as e:
+        print("Error downloading or replacing file:", e)
+
+
+async def download_latest_model_loop():
     while True:
-        try:
-            # Get the latest file in S3 bucket
-            latest_file = get_latest_file()
-            if latest_file:
-                print(latest_file)
-                latest_file_version = latest_file["ETag"]
-                if latest_file_version != current_model_version:
-                    s3_client.download_file(BUCKET_NAME, latest_file["Key"], str(TEMP_FILE_PATH))
-
-                    # Load file from disk at TEMP_FILE_PATH and check if it loads successfully..
-                    temp_model = load_model(TEMP_FILE_PATH)
-
-                    os.replace(TEMP_FILE_PATH, CURRENT_FILE_PATH)
-                    current_model_version = latest_file_version
-                    current_model = temp_model
-
-                    print("New model downloaded, and loaded.")
-                else:
-                    print("Current model is up-to-date. No download needed.")
-
-        except (NoCredentialsError, PartialCredentialsError) as e:
-            print("Credentials error: ", e)
-        except Exception as e:
-            print("Error downloading or replacing file:", e)
+        # Download latest model if available
+        await download_latest_model()
 
         # Wait for the specified interval before checking again
         await asyncio.sleep(CHECK_INTERVAL_SECONDS)
@@ -80,7 +85,8 @@ async def download_latest_model():
 
 @app.on_event("startup")
 async def start_background_task():
-    asyncio.create_task(download_latest_model())
+    await download_latest_model()
+    asyncio.create_task(download_latest_model_loop())
 
 
 def fetch_listings(requests_func, search_criteria):
@@ -162,6 +168,12 @@ def predict(data):
 
 @router.get("/api/get-rental-recommendations/{property_id}")
 async def get_rental_recommendations(property_id: int):
+    if property_id < 0:
+        raise HTTPException(status_code=422, detail='property_id must be positive integer')
+
+    if property_id.bit_length() > 63:
+        raise HTTPException(status_code=422, detail='property_id value must fit in 64 bits')
+
     # 1) Query listing-service for listing details with property_id
     property_id_details = fetch_listings_by_property_ids([property_id])
 
