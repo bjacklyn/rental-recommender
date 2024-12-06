@@ -41,7 +41,7 @@ class ChatBot:
         print("Chatbot process started.")
 
     def stop(self):
-        print("Shutting down chatbot process.")
+        print("Shutting down chatbot process")
         self.chat_bot_prompts_queue.put(None)  # Signal worker it should exit
         self.chatbot_process.terminate()  # Gracefully terminate the worker process
         self.chatbot_process.join()  # Wait for it to finish
