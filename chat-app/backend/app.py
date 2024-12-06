@@ -190,9 +190,11 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
         while True:
             # Receive a message from the client
             data = await websocket.receive_text()
-            prompt = data.get("prompt")
-            property_ids = data.get("property_ids")
-
+            print("[app.py] data received on prompt: ", data)
+            #prompt = data.get("prompt")
+            #property_ids = data.get("property_ids")
+            prompt = data
+            property_ids = [123, 456, 789]
             if not prompt or not property_ids:
                 raise HTTPException(status_code=400, detail="Prompt and property_ids are required")
 
