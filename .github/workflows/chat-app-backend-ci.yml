@@ -28,7 +28,7 @@ jobs:
       # pip install -r backend/requirements.txt
 
     - name: Run Tests
-      working-directory: backend
+      working-directory: chat-app/backend
       run: pytest --maxfail=5 --disable-warnings --verbose
 
     # Step 3: Set up Docker

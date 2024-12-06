@@ -38,5 +38,9 @@ RUN python3 -m pip install \
 
 COPY --from=frontend_build /chat-app/build ./build
 COPY backend/app.py backend/chatbot.py backend/db.py backend/tracing.py ./
+ENV DEV_MODE=true
+RUN python3 -m pip install \
+    accelerate \
+    redis
 
-CMD ["uvicorn", "app:app"]
+CMD ["uvicorn", "app:app","--host", "0.0.0.0"]
