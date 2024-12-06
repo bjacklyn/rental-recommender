@@ -44,7 +44,7 @@ jobs:
     # Step 4: Build the Docker image
     - name: Build and Tag Docker Image
       run: |
-        docker build . --tag chat-app:1.0
+        docker build -f chat-app/Dockerfile . --tag chat-app:1.0
 
     # Step 5: Deploy the container locally (Optional for CI, add this step for a local runner)
     - name: Run Docker Container Locally
