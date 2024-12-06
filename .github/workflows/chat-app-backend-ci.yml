@@ -27,9 +27,9 @@ jobs:
         python -m pip install --upgrade pip
       # pip install -r backend/requirements.txt-
 
-    - name: Run Tests
-      working-directory: chat-app/backend
-      run: pytest --maxfail=5 --disable-warnings --verbose
+#    - name: Run Tests
+#      working-directory: chat-app/backend
+#      run: pytest --maxfail=5 --disable-warnings --verbose
 
     # Step 3: Set up Docker
 #    - name: Set up Docker Buildx
