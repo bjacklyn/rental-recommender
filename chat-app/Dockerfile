@@ -41,6 +41,8 @@ COPY backend/app.py backend/chatbot.py backend/db.py backend/tracing.py ./
 ENV DEV_MODE=true
 RUN python3 -m pip install \
     accelerate \
-    redis
+    redis \
+    pytest \
+    pytest-cov
 
 CMD ["uvicorn", "app:app","--host", "0.0.0.0"]
