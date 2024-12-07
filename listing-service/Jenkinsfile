@@ -29,8 +29,10 @@ pipeline {
                 // Run the test cases
                 dir('listing-service') {
                     sh '''
+                    export PATH=$PATH:/var/lib/jenkins/.local/bin
+                    pytest --version
                     pytest test_app.py --maxfail=5 --disable-warnings --verbose
-                    '''
+                '''
                 }
             }
         }
