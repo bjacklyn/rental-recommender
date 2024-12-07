@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
+import { Slider as AntdSlider, Typography } from "antd";
 import styled from "styled-components";
+
+const { Text } = Typography;
 
 const SliderWrapper = styled.div`
   display: flex;
@@ -9,95 +12,44 @@ const SliderWrapper = styled.div`
   width: 100%;
 `;
 
-const LabelRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
 
-const Label = styled.label`
-  font-size: ${({ theme }) => theme.typography.fontSizeBase};
-  font-weight: ${({ theme }) => theme.typography.headingFontWeight};
-  color: ${({ theme }) => theme.colors.primaryText};
-`;
-
-const Value = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSizeBase};
-  font-weight: ${({ theme }) => theme.typography.bodyFontWeight};
-  color: ${({ theme }) => theme.colors.secondaryText};
-`;
-
-const Input = styled.input`
-  width: 100%;
-  cursor: pointer;
-  appearance: none;
-  height: 6px;
-  background: ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  transition: background-color ${({ theme }) => theme.transitions.default};
-
-  &::-webkit-slider-thumb {
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    background: ${({ theme }) => theme.colors.primaryButton};
-    border: 2px solid ${({ theme }) => theme.colors.primaryBackground};
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color ${({ theme }) => theme.transitions.default};
-  }
-
-  &::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: ${({ theme }) => theme.colors.primaryButton};
-    border: 2px solid ${({ theme }) => theme.colors.primaryBackground};
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color ${({ theme }) => theme.transitions.default};
-  }
-
-  &:hover::-webkit-slider-thumb,
-  &:hover::-moz-range-thumb {
-    background: ${({ theme }) => theme.colors.secondaryButton};
-  }
-
-  &:focus {
-    outline: 2px solid ${({ theme }) => theme.colors.primaryButton};
-    outline-offset: 2px;
-  }
-`;
-
-const Slider = ({ label, value, min, max, step, onChange }) => (
+const Slider = ({ label, value, min, max, step, onChange, marks, tooltipVisible }) => (
   <SliderWrapper>
-    <LabelRow>
-      {label && <Label>{label}</Label>}
-      <Value>{value}</Value>
-    </LabelRow>
-    <Input
-      type="range"
+    {label && (
+      <Text strong style={{ marginBottom: "8px" }}>
+        {label}
+      </Text>
+    )}
+    <AntdSlider
+      range
       min={min}
       max={max}
       step={step}
       value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-      aria-label={label || "slider"}
+      onChange={onChange}
+      marks={marks}
+      tooltip={{
+        placement: "top",
+      }}
     />
   </SliderWrapper>
 );
 
 Slider.propTypes = {
   label: PropTypes.string,
-  value: PropTypes.number.isRequired,
+  value: PropTypes.arrayOf(PropTypes.number).isRequired,
   min: PropTypes.number.isRequired,
   max: PropTypes.number.isRequired,
   step: PropTypes.number,
   onChange: PropTypes.func.isRequired,
+  marks: PropTypes.object,
+  tooltipVisible: PropTypes.bool,
 };
 
 Slider.defaultProps = {
   label: null,
   step: 1,
+  marks: null
 };
 
 export default Slider;

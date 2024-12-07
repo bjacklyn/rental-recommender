@@ -1,84 +1,104 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { getPropertyDetails } from "../../apis/listingApi"; // Import the POST API function
 
-// Async Thunk to Fetch Property Data
-export const fetchProperty = createAsyncThunk(
-  "property/fetchProperty",
-  async (propertyId, { rejectWithValue }) => {
+// Async Thunk to Fetch Property Details (POST Endpoint)
+export const fetchPropertyDetails = createAsyncThunk(
+  "property/fetchPropertyDetails",
+  async (propertyIds, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/properties/${propertyId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch property data");
-      }
-      return await response.json();
+      const data = await getPropertyDetails(propertyIds); // Call the POST endpoint
+      return data; // Return property details
     } catch (error) {
-      return rejectWithValue(error.message);
+      console.error("Error fetching property details:", error); // Debugging info
+      return rejectWithValue(
+        error.response?.data || error.message || "Failed to fetch property details"
+      );
     }
   }
 );
 
 // Async Thunk to Fetch Similar Listings
+
+/*
 export const fetchSimilarListings = createAsyncThunk(
   "property/fetchSimilarListings",
   async (propertyId, { rejectWithValue }) => {
     try {
       const response = await fetch(`/api/properties/${propertyId}/similar`);
       if (!response.ok) {
-        throw new Error("Failed to fetch similar listings");
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || "Failed to fetch similar listings");
       }
       return await response.json();
     } catch (error) {
-      return rejectWithValue(error.message);
+      console.error("Error fetching similar listings:", error); // Debugging info
+      return rejectWithValue(
+        error.message || "Failed to fetch similar listings"
+      );
     }
   }
 );
+*/
 
 const initialState = {
-  property: null,
-  similarListings: [],
-  isLoading: false,
-  error: null,
+  propertyDetails: null, // Stores the fetched property details
+  similarListings: [], // Stores similar property listings
+  isLoadingDetails: false, // Loading state for property details
+  isLoadingSimilarListings: false, // Loading state for similar listings
+  errorDetails: null, // Error state for property details API
+  errorSimilarListings: null, // Error state for similar listings API
 };
 
 const propertySlice = createSlice({
   name: "property",
   initialState,
   reducers: {
-    clearProperty(state) {
-      state.property = null;
+    clearPropertyDetails(state) {
+      state.propertyDetails = null;
+      state.isLoadingDetails = false;
+      state.errorDetails = null;
+    },
+    clearSimilarListings(state) {
       state.similarListings = [];
-      state.isLoading = false;
-      state.error = null;
+      state.isLoadingSimilarListings = false;
+      state.errorSimilarListings = null;
+    },
+    clearAll(state) {
+      return initialState; // Reset the entire state
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProperty.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      // Handle fetchPropertyDetails (POST Endpoint)
+      .addCase(fetchPropertyDetails.pending, (state) => {
+        state.isLoadingDetails = true;
+        state.errorDetails = null;
       })
-      .addCase(fetchProperty.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.property = action.payload;
+      .addCase(fetchPropertyDetails.fulfilled, (state, action) => {
+        state.isLoadingDetails = false;
+        state.propertyDetails = action.payload && action.payload[0];
       })
-      .addCase(fetchProperty.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
+      .addCase(fetchPropertyDetails.rejected, (state, action) => {
+        state.isLoadingDetails = false;
+        state.errorDetails = action.payload;
       })
-      .addCase(fetchSimilarListings.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      // Handle fetchSimilarListings
+   /*   .addCase(fetchSimilarListings.pending, (state) => {
+        state.isLoadingSimilarListings = true;
+        state.errorSimilarListings = null;
       })
       .addCase(fetchSimilarListings.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isLoadingSimilarListings = false;
         state.similarListings = action.payload;
       })
       .addCase(fetchSimilarListings.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
+        state.isLoadingSimilarListings = false;
+        state.errorSimilarListings = action.payload;
       });
+      */
   },
 });
 
-export const { clearProperty } = propertySlice.actions;
+export const { clearPropertyDetails, clearSimilarListings, clearAll } = propertySlice.actions;
 
 export default propertySlice.reducer;

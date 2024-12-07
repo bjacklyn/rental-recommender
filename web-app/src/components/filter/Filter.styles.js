@@ -1,34 +1,36 @@
 import styled from "styled-components";
 
 export const FilterWrapper = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.medium};
-  padding: ${({ theme }) => theme.spacing.medium};
-  background-color: ${({ theme }) => theme.colors.secondaryBackground};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: ${({ theme }) => theme.boxShadow.default};
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) auto; /* Four equal columns + one for the button */
+  align-items: center; /* Vertically align all items */
+  gap: ${({ theme }) => theme.spacing.large}; /* Uniform spacing between items */
+  padding: ${({ theme }) => theme.spacing.large}; /* Add padding inside the wrapper */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto; /* Center the wrapper horizontally */
 `;
 
 export const FilterItem = styled.div`
-  flex: 1;
-  min-width: 200px;
-
-  @media (max-width: 768px) {
-    min-width: 100%;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.small}; /* Spacing between label and input */
 
   label {
     font-size: ${({ theme }) => theme.typography.fontSizeBase};
-    color: ${({ theme }) => theme.colors.secondaryText};
-    margin-bottom: ${({ theme }) => theme.spacing.small};
+    font-weight: ${({ theme }) => theme.typography.bodyFontWeight};
+    color: ${({ theme }) => theme.colors.primaryText};
   }
 
-  input, select {
-    margin-top: ${({ theme }) => theme.spacing.small};
-    padding: ${({ theme }) => theme.spacing.small};
-    border-radius: ${({ theme }) => theme.borderRadius};
-    border: 1px solid ${({ theme }) => theme.colors.border};
+  input,
+  select,
+  .ant-slider {
+    width: 100%; /* Ensure inputs and sliders stretch to container */
   }
+`;
+
+export const ButtonItem = styled.div`
+  grid-column: 5; /* Place the button in the rightmost column */
+  justify-self: end; /* Align the button to the right */
+  padding-left: ${({ theme }) => theme.spacing.large}; /* Add space between the button and the rest */
 `;

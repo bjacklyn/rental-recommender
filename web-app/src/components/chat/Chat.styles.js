@@ -1,47 +1,28 @@
 import styled from "styled-components";
 
-export const ChatContainer = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  max-width: 600px;
-  margin: auto;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  overflow: hidden;
-`;
+const ChatAppWrapper = styled.div`
+    display: flex;
+    height: calc(100vh - 80px); 
+    margin: 0;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+`
 
-export const MessageArea = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  background-color: ${({ theme }) => theme.colors.background};
-`;
+const ChatContainer = styled.div`
+    width: 300px; 
+    padding: 10px; 
+    overflow-y: auto; 
+`
 
-export const InputArea = styled.div`
-  padding: 16px;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-`;
+const ChatMessagesContainer = styled.div`
+    flex: 1; 
+    display: flex;
+    flex-direction: column; 
+    padding: 10px; 
+`
 
-export const MessageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: ${(props) => (props.isUser ? "flex-end" : "flex-start")};
-  margin-bottom: 12px;
-`;
-
-export const MessageBubble = styled.div`
-  max-width: 70%;
-  padding: 10px 16px;
-  border-radius: 20px;
-  background-color: ${(props) =>
-    props.isUser ? props.theme.colors.primary : props.theme.colors.backgroundAlt};
-  color: ${(props) => (props.isUser ? "#fff" : props.theme.colors.text)};
-  word-wrap: break-word;
-`;
-
-export const InputWrapper = styled.div`
-  display: flex;
-  align-items: center;
-`;
+const StyledChat = styled.div`
+    padding-right: 20px;
+`

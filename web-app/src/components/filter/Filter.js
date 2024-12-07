@@ -4,7 +4,7 @@ import Input from "../common/Input";
 import Select from "../common/Select";
 import Slider from "../common/Slider";
 import Button from "../common/Button";
-import { FilterWrapper, FilterItem } from "./Filter.styles";
+import { FilterWrapper, FilterItem, ButtonItem } from "./Filter.styles";
 
 const propertyTypeOptions = [
   { value: "apartment", label: "Apartment" },
@@ -13,8 +13,8 @@ const propertyTypeOptions = [
 ];
 
 const Filter = ({
-  initialValues = { pincode: "", propertyType: "apartment", bedrooms: 0, sqft: [500, 5000] },
-  onFilter = () => {},
+  initialValues = { pincode: "", propertyType: "apartment", bedrooms: [1, 3], sqft: [0, 2500] },
+  onFilter,
 }) => {
   const [pincode, setPincode] = useState(initialValues.pincode);
   const [propertyType, setPropertyType] = useState(initialValues.propertyType);
@@ -22,7 +22,17 @@ const Filter = ({
   const [sqft, setSqft] = useState(initialValues.sqft);
 
   const handleFilter = () => {
-    onFilter({ pincode, propertyType, bedrooms, sqft });
+    // Convert the filters into the API-required format
+    const filters = {
+      pincode,
+      min_beds: bedrooms[0],
+      max_beds: bedrooms[1],
+      min_sqft: sqft[0],
+      max_sqft: sqft[1],
+      property_type: propertyType, // Optional, if needed
+    };
+
+    onFilter(filters); // Call the parent onFilter handler
   };
 
   return (
@@ -40,7 +50,7 @@ const Filter = ({
         <Select
           label="Property Type"
           value={propertyType}
-          onChange={(e) => setPropertyType(e.target.value)}
+          onChange={setPropertyType}
           options={propertyTypeOptions}
         />
       </FilterItem>
@@ -52,6 +62,15 @@ const Filter = ({
           max={5}
           step={1}
           onChange={setBedrooms}
+          marks={{
+            0: "0",
+            1: "1",
+            2: "2",
+            3: "3",
+            4: "4",
+            5: "5",
+          }}
+          tooltipVisible={true}
         />
       </FilterItem>
       <FilterItem>
@@ -61,14 +80,20 @@ const Filter = ({
           min={0}
           max={5000}
           step={100}
-          onChange={(value) => setSqft(value)}
+          onChange={setSqft}
+          marks={{
+            0: "0",
+            2500: "2500",
+            5000: "5000",
+          }}
+          tooltipVisible={true}
         />
       </FilterItem>
-      <FilterItem>
-        <Button variant="primary" size="large" onClick={handleFilter}>
+      <ButtonItem>
+        <Button type="primary" size="large" onClick={handleFilter}>
           Apply Filters
         </Button>
-      </FilterItem>
+      </ButtonItem>
     </FilterWrapper>
   );
 };
@@ -77,10 +102,10 @@ Filter.propTypes = {
   initialValues: PropTypes.shape({
     pincode: PropTypes.string,
     propertyType: PropTypes.string,
-    bedrooms: PropTypes.number,
+    bedrooms: PropTypes.arrayOf(PropTypes.number),
     sqft: PropTypes.arrayOf(PropTypes.number),
   }),
-  onFilter: PropTypes.func,
+  onFilter: PropTypes.func.isRequired,
 };
 
 export default Filter;

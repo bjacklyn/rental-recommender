@@ -15,3 +15,9 @@ export const EmptyMessage = styled.p`
   font-size: 16px;
   margin-top: 20px;
 `;
+
+export const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+`;

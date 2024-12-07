@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchProperty,
-  fetchSimilarListings,
+  fetchPropertyDetails,
+ // fetchSimilarListings,
 } from "./state";
 import {
   selectPropertyDetails,
-  selectSimilarListings,
+ //selectSimilarListings,
   selectPropertyLoading,
   selectPropertyError,
 } from "./constants";
@@ -16,21 +16,25 @@ import { PropertyWrapper } from "./Property.styles";
 const Property = ({ propertyId }) => {
   const dispatch = useDispatch();
   const property = useSelector(selectPropertyDetails);
-  const similarListings = useSelector(selectSimilarListings);
+  const similarListings = []; //useSelector(selectSimilarListings);
   const isLoading = useSelector(selectPropertyLoading);
   const error = useSelector(selectPropertyError);
 
   useEffect(() => {
-    dispatch(fetchProperty(propertyId));
-    dispatch(fetchSimilarListings(propertyId));
+    dispatch(fetchPropertyDetails([propertyId])); // Correct POST payload
+  //  dispatch(fetchSimilarListings(propertyId)); // Optional: Fetch similar listings
   }, [dispatch, propertyId]);
 
-  if (isLoading) return <p>Loading...</p>;
+  // Debugging Logs
+  console.log("Property Details:", property);
+  console.log("Similar Listings:", similarListings);
+
+  if (isLoading) return <p>Loading property details...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <PropertyWrapper>
-      <Details property={property} similarListings={similarListings} />
+      <Details property={property.propertyDetails} similarListings={similarListings} />
     </PropertyWrapper>
   );
 };

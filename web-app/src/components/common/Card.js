@@ -59,11 +59,11 @@ const Button = styled.button`
 `;
 
 const Card = ({ data, onClick }) => {
-  const { image, title, price, bedrooms, bathrooms } = data;
+  const { primary_photo, title, price, bedrooms, bathrooms } = data;
 
   return (
     <CardWrapper onClick={onClick}>
-      <Image src={image} alt={title} />
+      <Image src={primary_photo} alt={title} />
       <Info>
         <Title>{title}</Title>
         <Price>{price}</Price>

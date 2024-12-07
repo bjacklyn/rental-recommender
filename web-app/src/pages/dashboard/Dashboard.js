@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   applyFilters,
@@ -17,7 +17,6 @@ import {
 } from "./constants";
 import Filter from "../../components/filter/Filter";
 import List from "../../components/list/List";
-import Chat from "../../components/chat/Chat";
 import {
   DashboardWrapper,
   Header,
@@ -26,6 +25,10 @@ import {
   LoadingMessage,
   Placeholder,
 } from "./Dashboard.styles";
+import ChatMessages from '../../components/chat/ChatMessages'
+import Chats from '../../components/chat/Chats'
+
+
 
 const Dashboard = ({ onSignOut }) => {
   const dispatch = useDispatch();
@@ -33,17 +36,22 @@ const Dashboard = ({ onSignOut }) => {
   const filterApplied = useSelector(selectDashboardFilterApplied);
   const listings = useSelector(selectDashboardListings) || [];
   const isLoading = useSelector(selectDashboardLoading);
-  const chatMessages = useSelector(selectChatMessages);
-  const chatContext = useSelector(selectChatContext);
+
+  const [chatId, setChatId] = useState('');
+
+  const onSelectChat = (id) => {
+      setChatId(id); // Update the selected chat ID
+  };
 
   useEffect(() => {
     if (filterApplied) {
       dispatch(fetchListings(filters));
     }
-  }, [filterApplied, JSON.stringify(filters), dispatch]);
+  }, [filterApplied, filters, dispatch]);
 
-  const handleFilterSubmit = (filters) => {
-    dispatch(applyFilters(filters));
+
+  const handleFilterSubmit = (filterParams) => {
+    dispatch(applyFilters(filterParams));
   };
 
   const handleSelectProperty = (property) => {
@@ -60,7 +68,15 @@ const Dashboard = ({ onSignOut }) => {
         <h1>Rental Recommender</h1>
       </Header>
       <Section>
-        <Filter onFilter={handleFilterSubmit} initialValues={filters} />
+        <Filter
+          onFilter={handleFilterSubmit}
+          initialValues={{
+            pincode: filters.pincode || "",
+            propertyType: filters.propertyType || "apartment",
+            bedrooms: filters.min_beds && filters.max_beds ? [filters.min_beds, filters.max_beds] : [1, 3],
+            sqft: filters.min_sqft && filters.max_sqft ? [filters.min_sqft, filters.max_sqft] : [0, 2500],
+          }}
+        />
       </Section>
       {filterApplied && (
         <LayoutWrapper>
@@ -75,11 +91,14 @@ const Dashboard = ({ onSignOut }) => {
                   city: property.city,
                   state: property.state,
                   zip: property.zip_code,
-                  price: property.list_price_min
-                    ? `$${property.list_price_min.toLocaleString()} - $${property.list_price_max.toLocaleString()}`
-                    : "Price not available",
+                  price: property.list_price
+                    ? '$' + `${property.list_price}`
+                    : "$1300",
                   text: property.text,
                   url: property.property_url,
+                  bathrooms: property.full_baths,
+                  bedrooms: property.beds,
+                  primary_photo: property.primary_photo
                 }))}
                 onItemClick={handleSelectProperty}
               />
@@ -88,12 +107,12 @@ const Dashboard = ({ onSignOut }) => {
             )}
           </div>
           <div>
-            <Chat
-              messages={chatMessages}
-              context={chatContext}
-              onSendMessage={handleSendMessage}
-              onClearChat={() => dispatch(clearChat())}
-            />
+            <div className="chats-container">
+              <Chats onSelectChat={onSelectChat} />
+            </div>
+            <div className="chat-messages-container">
+              <ChatMessages chatId={chatId} />
+            </div>
           </div>
         </LayoutWrapper>
       )}

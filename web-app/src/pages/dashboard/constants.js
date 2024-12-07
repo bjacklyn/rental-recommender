@@ -1,5 +1,3 @@
-
-// Filters
 export const selectDashboardFilters = (state) => state.dashboard.filters;
 export const selectDashboardFilterApplied = (state) => state.dashboard.filterApplied;
 

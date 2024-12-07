@@ -4,6 +4,10 @@ export const DetailsContainer = styled.div`
   max-width: 1200px;
   margin: auto;
   padding: 16px;
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 `;
 
 export const HeaderSection = styled.div`
@@ -19,10 +23,12 @@ export const HeaderSection = styled.div`
 export const ImageWrapper = styled.div`
   flex: 2;
 
-  .ant-carousel img {
+  img {
     width: 100%;
     height: auto;
     border-radius: ${({ theme }) => theme.borderRadius};
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
   }
 `;
 
@@ -36,6 +42,7 @@ export const InfoWrapper = styled.div`
     font-size: 24px;
     margin-bottom: 8px;
     color: ${({ theme }) => theme.colors.text};
+    word-break: break-word;
   }
 
   .quick-details {
@@ -59,13 +66,16 @@ export const ContactButton = styled.button`
   background-color: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.textOnPrimary};
   border: none;
-  padding: 8px 16px;
+  padding: 10px 20px;
   font-size: 16px;
+  font-weight: 500;
   border-radius: ${({ theme }) => theme.borderRadius};
   cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.primaryHover};
+    transform: translateY(-2px);
   }
 `;
 
@@ -75,6 +85,17 @@ export const DetailsSection = styled.div`
   .ant-collapse {
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius};
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .ant-collapse-header {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .ant-collapse-content {
+    padding: 12px 16px;
   }
 `;
 
@@ -84,9 +105,25 @@ export const CarouselSection = styled.div`
   h3 {
     font-size: 20px;
     margin-bottom: 16px;
+    color: ${({ theme }) => theme.colors.text};
   }
 
-  .ant-carousel .slick-slide {
-    padding: 8px;
+  .ant-carousel {
+    .slick-slide {
+      padding: 8px;
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+
+    .slick-dots li button {
+      background-color: ${({ theme }) => theme.colors.textAlt};
+    }
+
+    .slick-dots li.slick-active button {
+      background-color: ${({ theme }) => theme.colors.primary};
+    }
   }
 `;

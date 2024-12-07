@@ -1,57 +1,59 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import { Dropdown, Menu, Button, Typography } from "antd";
+import { DownOutlined } from "@ant-design/icons";
+
+const { Text } = Typography;
 
 const SelectWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.small};
   width: 100%;
+  margin-bottom : 14px
 `;
 
-const Label = styled.label`
-  font-size: ${({ theme }) => theme.typography.fontSizeBase};
-  font-weight: ${({ theme }) => theme.typography.headingFontWeight};
-  color: ${({ theme }) => theme.colors.primaryText};
-`;
 
-const SelectField = styled.select`
-  padding: ${({ theme }) => theme.spacing.small};
-  font-size: ${({ theme }) => theme.typography.fontSizeBase};
-  color: ${({ theme }) => theme.colors.primaryText};
+const StyledButton = styled(Button)`
+  width: 100%;
+  text-align: left;
   background-color: ${({ theme }) => theme.colors.primaryBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  outline: none;
-  transition: ${({ theme }) => theme.transitions.default};
-  cursor: pointer;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primaryButton};
-    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primaryButton}33;
-  }
+  color: ${({ theme }) => theme.colors.primaryText};
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.secondaryBackground};
-  }
-
-  option {
-    background-color: ${({ theme }) => theme.colors.primaryBackground};
-    color: ${({ theme }) => theme.colors.primaryText};
+    border-color: ${({ theme }) => theme.colors.primaryButton};
   }
 `;
 
 const Select = ({ label, options, value, onChange }) => {
+  const handleMenuClick = ({ key }) => {
+    onChange(key); // Call the onChange handler with the selected key
+  };
+
+  const menu = (
+    <Menu onClick={handleMenuClick}>
+      {options.map((option) => (
+        <Menu.Item key={option.value}>{option.label}</Menu.Item>
+      ))}
+    </Menu>
+  );
+
+  const selectedOption = options.find((option) => option.value === value);
+
   return (
     <SelectWrapper>
-      {label && <Label>{label}</Label>}
-      <SelectField value={value} onChange={onChange}>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </SelectField>
+      {label && (
+        <Text strong style={{ marginBottom: "16px" }}>
+          {label}
+        </Text>
+      )}
+      <Dropdown overlay={menu} trigger={['click']} placement="bottomLeft">
+        <StyledButton>
+          {selectedOption ? selectedOption.label : "Select an option"} <DownOutlined />
+        </StyledButton>
+      </Dropdown>
     </SelectWrapper>
   );
 };
