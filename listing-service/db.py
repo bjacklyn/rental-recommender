@@ -2,7 +2,7 @@ from models import PropertyResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # Hardcoded MongoDB credentials
-MONGO_URL = "mongodb://dev:MongoDBDev@//18.119.153.150:27017/dev?directConnection=true&authSource=dev"
+MONGO_URL = "mongodb://dev:MongoDBDev@18.119.153.150:27017/dev?directConnection=true&authSource=dev"
 DB_NAME = "dev"
 COLLECTION_NAME = "sample"
 
