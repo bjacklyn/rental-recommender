@@ -39,6 +39,7 @@ class PropertyResponse(BaseModel):
     new_construction: Optional[bool] = Field(None, description="Indicates if it is a new construction")
     lot_sqft: Optional[int] = Field(None, description="Lot size in square feet")
     price_per_sqft: Optional[float] = Field(None, description="Price per square foot")
+    primary_photo: Optional[str] = Field(None, description="URL of the primary photo of the property") 
 
     @validator(
         "zip_code",
