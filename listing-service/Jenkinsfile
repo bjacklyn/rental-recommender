@@ -51,11 +51,15 @@ pipeline {
             steps {
                 script {
                     // Stop and remove the existing container if it exists
-                    def containerId = sh(script: "docker ps -aq --filter name=$CONTAINER_NAME", returnStdout: true).trim()
-                    if (containerId) {
-                        sh "docker stop ${containerId}"
-                        sh "docker rm ${containerId}"
-                    }
+                   sh '''
+                    CONTAINER_ID=$(docker ps -aq --filter name=listing-service-container)
+                    if [ -n "$CONTAINER_ID" ]; then
+                        docker stop $CONTAINER_ID || true
+                        docker rm $CONTAINER_ID || true
+                    else
+                        echo "No container found with name listing-service-container"
+                    fi
+                '''
                 }
             }
         }
