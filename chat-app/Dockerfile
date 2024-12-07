@@ -20,7 +20,7 @@ RUN python3 -m pip install \
   torch \
   transformers
 
-COPY ./backend/meta-llama ./meta-llama
+# COPY ./backend/meta-llama ./meta-llama
 
 # Install backend web application dependencies
 RUN python3 -m pip install \
