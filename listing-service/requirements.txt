@@ -38,10 +38,3 @@ uvicorn==0.32.1
 uvloop==0.21.0
 watchfiles==0.24.0
 websockets==14.1
-prometheus-fastapi-instrumentator==5.9.0
-opentelemetry-sdk>=1.18.0,<2.0.0
-opentelemetry-instrumentation-fastapi>=0.41b0,<1.0.0
-opentelemetry-semantic-conventions>=0.39b0,<1.0.0
-opentelemetry-instrumentation-fastapi==0.41b0
-opentelemetry-instrumentation-pymongo==0.41b0
-opentelemetry-exporter-otlp==1.18.0
