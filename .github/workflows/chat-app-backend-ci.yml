@@ -48,4 +48,4 @@ jobs:
     # Step 5: Deploy the container locally
     - name: Run Docker Container Locally
       run: |
-        docker run --rm --init  -it  -p 8000:8000 chat-app:1.0
+        docker run --rm --init  -p 8000:8000 chat-app:1.0
