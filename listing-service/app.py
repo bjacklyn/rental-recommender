@@ -117,7 +117,8 @@ async def get_filtered_properties(
             {"$unset": [  # Remove computed fields from results
                 "sqft_exists",
                 "beds_exists",
-            ]}
+            ]},
+            {"$limit": 50}
         ]
 
         # Execute the aggregation pipeline
