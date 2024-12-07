@@ -20,7 +20,7 @@ RUN python3 -m pip install \
   torch \
   transformers
 
-COPY backend/meta-llama ./meta-llama
+COPY ./backend/meta-llama ./meta-llama
 
 # Install backend web application dependencies
 RUN python3 -m pip install \
@@ -37,7 +37,7 @@ RUN python3 -m pip install \
   websockets
 
 COPY --from=frontend_build /chat-app/build ./build
-COPY backend/app.py backend/chatbot.py backend/db.py backend/tracing.py ./
+COPY ./backend/app.py ./backend/chatbot.py ./backend/db.py ./backend/tracing.py ./
 ENV DEV_MODE=true
 RUN python3 -m pip install \
     accelerate \
