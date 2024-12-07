@@ -12,6 +12,29 @@ pipeline {
                 checkout scm
             }
         }
+
+                stage('Install Dependencies') {
+            steps {
+                // Install dependencies
+                dir('listing-service') {
+                    sh '''
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
+                    '''
+                }
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                // Run the test cases
+                dir('listing-service') {
+                    sh '''
+                    pytest test_app.py --maxfail=5 --disable-warnings --verbose
+                    '''
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 // Navigate to listing-service and build the Docker image
