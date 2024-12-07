@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = "listing-service"
+        APP_DIR = "listing-service"
+        CONTAINER_PORT = "8010"
+        HOST_PORT = "8010"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                // Pull the latest code from the Git repository
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                // Navigate to the listing-service directory and build the Docker image
+                sh "docker build -t ${APP_NAME} ${APP_DIR}"
+            }
+        }
+
+        stage('Deploy Docker Container') {
+            steps {
+                // Stop and remove any existing container, then run the new one
+                sh """
+                docker stop ${APP_NAME} || true
+                docker rm ${APP_NAME} || true
+                docker run -d \
+                  --name ${APP_NAME} \
+                  -p ${HOST_PORT}:${CONTAINER_PORT} \
+                  ${APP_NAME}
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Application deployed successfully!'
+        }
+        failure {
+            echo 'Deployment failed. Check logs for details.'
+        }
+    }
+}
