@@ -53,7 +53,7 @@ Bottleneck Identification: Analyzes the collected data to identify performance b
 1. **Clone the repository**:  
    ```bash
    git clone https://github.com/yourusername/auth-service.git
-   cd auth-service
+   cd <service-name>
     ```
 
 Install dependencies:  
