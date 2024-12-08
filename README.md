@@ -43,7 +43,7 @@ Bottleneck Identification: Analyzes the collected data to identify performance b
 
 
 
-### Setup
+# Setup
 #### Prerequisites
 - Python 3.8 or higher
 - Docker (for containerization)

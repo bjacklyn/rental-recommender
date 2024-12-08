@@ -1,13 +1,13 @@
-Auth Service
-Introduction
+# Auth Service
+### Introduction
 The Auth Service is a core component of the project, responsible for managing user authentication and authorization. It provides secure login, registration, and token management functionalities.  <hr></hr>
 How It Works
 The service uses a combination of secure methods to handle user authentication and authorization. Key functionalities include:  
 User Registration: Allows new users to register by providing necessary details.
 User Login: Authenticates users based on their credentials and issues tokens.
 Token Management: Manages access and refresh tokens to ensure secure access to protected resources.
-<hr></hr>
-Setup
+
+# Setup
 Prerequisites
 Python 3.8 or higher
 Docker (for containerization)
@@ -22,7 +22,7 @@ Run the application:
 uvicorn app:app --host 0.0.0.0 --port 8000
 
 
-Contributing
+# Contributing
 We welcome contributions to the Auth Service. To contribute, follow these steps:  
 Fork the repository on GitHub.
 Clone your fork locally:
