@@ -33,7 +33,7 @@ const ChatMessages = () => {
     };
 
     const connectWebSocket = (chatId) => {
-        const ws = new WebSocket(`${BASE_CHAT_URL}/chat-app/ws/chat/${chatId}`);
+        const ws = new WebSocket(`ws://rentalrecommender.cloud/chat-app/ws/chat/${chatId}`);
 
         ws.onopen = () => {
             setIsSocketOpen(true);

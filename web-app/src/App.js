@@ -19,9 +19,9 @@ const App = () => {
         <GlobalStyles />
         <Router>
           <Routes>
-            <Route path="/" element={<Dashboard/>} />
-            <Route path="/listing/:propertyId" element={<PropertyWrapper />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/web-app/" element={<Dashboard/>} />
+            <Route path="/web-app/listing/:propertyId" element={<PropertyWrapper />} />
+            <Route path="*" element={<Navigate to="/web-app/" replace />} />
           </Routes>
         </Router>
       </ThemeProvider>

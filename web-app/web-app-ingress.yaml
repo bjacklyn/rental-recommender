@@ -4,15 +4,15 @@ metadata:
   name: web-app-ingress
   annotations:
     spec.ingressClassName: nginx
-    nginx.ingress.kubernetes.io/auth-signin: http://rentalrecommender.cloud/oauth2/start?rd=$escaped_request_uri
-    nginx.ingress.kubernetes.io/auth-url: http://rentalrecommender.cloud/oauth2/auth
-    nginx.ingress.kubernetes.io/auth-response-headers: Authorization, X-Auth-Request-Email, X-Auth-Request-User, X-Forwarded-Access-Token
-    nginx.ingress.kubernetes.io/proxy-buffer-size: 512k
+#    nginx.ingress.kubernetes.io/auth-signin: http://rentalrecommender.cloud/oauth2/start?rd=$escaped_request_uri
+#    nginx.ingress.kubernetes.io/auth-url: http://rentalrecommender.cloud/oauth2/auth
+#    nginx.ingress.kubernetes.io/auth-response-headers: Authorization, X-Auth-Request-Email, X-Auth-Request-User, X-Forwarded-Access-Token
+#    nginx.ingress.kubernetes.io/proxy-buffer-size: 512k
 spec:
   rules:
     - http:
         paths:
-          - path: /
+          - path: /web-app
             pathType: Prefix
             backend:
               service:
