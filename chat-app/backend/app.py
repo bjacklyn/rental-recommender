@@ -191,6 +191,9 @@ async def chat(chat_id: int, websocket: WebSocket, db: ChatDB = Depends(ChatDB))
             # Receive a message from the client
             prompt = await websocket.receive_text()
 
+            print(prompt)
+            
+
             # Save ChatMessage with empty response in database to get a chat_message.id
             chat_message = db.create_chat_message(chat.id, prompt, "")
 

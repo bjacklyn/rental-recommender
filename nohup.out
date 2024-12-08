@@ -1,0 +1,659 @@
+Forwarding from 0.0.0.0:80 -> 80
+Forwarding from 0.0.0.0:443 -> 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+E1208 00:24:09.762565  102333 portforward.go:385] "Unhandled Error" err="error copying from remote stream to local connection: readfrom tcp4 172.31.25.141:80->130.65.254.11:38632: write tcp4 172.31.25.141:80->130.65.254.11:38632: write: broken pipe"
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+E1208 00:27:19.408367  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+E1208 00:28:47.810073  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+E1208 00:30:38.139463  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+E1208 00:34:45.456595  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:34:46.895625  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+E1208 00:35:13.549719  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+E1208 00:35:25.124298  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:35:26.642268  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+E1208 00:35:32.096276  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+E1208 00:35:43.470122  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+E1208 00:35:51.136251  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+E1208 00:35:56.866869  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+E1208 00:35:59.411882  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 443
+E1208 00:36:02.213872  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:36:02.213990  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+E1208 00:36:13.901471  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:36:14.712579  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:36:14.728490  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+E1208 00:36:27.028992  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:36:29.925511  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+E1208 00:36:32.934934  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:36:32.935002  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+E1208 00:36:43.446312  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+E1208 00:36:46.169538  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+E1208 00:37:04.138003  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:37:04.138003  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+E1208 00:37:13.782277  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+E1208 00:37:16.568821  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 443
+E1208 00:37:35.746179  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:37:44.081376  102333 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Terminated
+Died again wow dude
+Forwarding from 0.0.0.0:80 -> 80
+Forwarding from 0.0.0.0:443 -> 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+E1208 00:51:07.667323  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 443
+E1208 00:51:21.028282  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:51:23.822285  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:51:23.953926  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:51:24.203734  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:51:26.871256  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:51:27.710263  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:51:27.861696  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:51:28.118529  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 00:51:31.724266  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 443
+E1208 00:51:33.127751  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 80
+E1208 00:51:39.486307  106488 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+E1208 00:52:05.267912  106488 portforward.go:374] "Unhandled Error" err="error creating forwarding stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Terminated
+Died again wow dude
+Forwarding from 0.0.0.0:80 -> 80
+Forwarding from 0.0.0.0:443 -> 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+E1208 01:09:21.128264  109300 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 443
+Handling connection for 80
+Terminated
+Died again wow dude
+Forwarding from 0.0.0.0:80 -> 80
+Forwarding from 0.0.0.0:443 -> 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+E1208 01:20:08.675916  113965 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+E1208 01:20:13.502916  113965 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+E1208 01:20:15.250695  113965 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 443
+E1208 01:20:19.215416  113965 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 80
+E1208 01:20:40.906430  113965 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+E1208 01:20:40.906430  113965 portforward.go:351] "Unhandled Error" err="error creating error stream for port 80 -> 80: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+E1208 01:20:45.881726  113965 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+E1208 01:22:05.839321  113965 portforward.go:351] "Unhandled Error" err="error creating error stream for port 443 -> 443: Timeout occurred"
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Terminated
+Died again wow dude
+Forwarding from 0.0.0.0:80 -> 80
+Forwarding from 0.0.0.0:443 -> 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 80
+Handling connection for 443
