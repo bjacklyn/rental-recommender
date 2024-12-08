@@ -1,0 +1,168 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.chat-app {
+  display: flex;
+  height: calc(100vh - 80px); /* Full height of the viewport minus body top/bottom padding and this top/bottom padding */
+  margin: 0;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chats-container {
+  width: 300px; /* Fixed width for chat logs */
+  padding: 10px; /* Optional padding */
+  overflow-y: auto; /* Scroll if content is too long */
+}
+
+.chat-messages-container {
+  flex: 1; /* Take up remaining space */
+  display: flex;
+  flex-direction: column; /* Align messages and input vertically */
+  padding: 10px; /* Optional padding */
+}
+
+.chats {
+  padding-right: 20px;
+}
+
+.chats ul {
+  list-style: none;
+  padding: 0;
+}
+
+.chats li {
+  display: flex;
+  align-items: center; /* Center vertically */
+  justify-content: space-between; /* Center horizontally */
+}
+
+.chats span {
+  padding: 10px 10px; /* Add padding for better click area */
+  border: 1px solid transparent; /* Transparent border for spacing */
+  margin: 5px 0; /* Space between items */
+  border-radius: 4px; /* Slightly round the corners */
+  cursor: pointer; /* Change cursor to pointer */
+  transition: background-color 0.3s, border-color 0.3s; /* Smooth transition */
+}
+
+.chats span:hover {
+  background-color: #f0f0f0; /* Light gray background on hover */
+  border-color: #007bff; /* Change border color on hover */
+}
+
+.chats span.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3; /* Darker border for active */
+}
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.message {
+  margin: 5px 0;
+}
+
+.message-prompt {
+  padding: 10px;
+}
+
+.message-response {
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+input {
+  padding: 10px;
+  margin: 10px 0px 10px 0px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.chat-header {
+  display: flex; /* Use Flexbox for the header */
+  justify-content: space-between; /* Space between the title and button */
+  align-items: center; /* Center items vertically */
+  margin-bottom: 10px; /* Space below the header */
+}
+
+
+.new-chat-button {
+  background-color: #007bff; /* Bootstrap primary color */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex; /* Use Flexbox */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+}
+
+.new-chat-button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+.delete-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: red;
+}
