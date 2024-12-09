@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setChats, setActiveChatId, addChat, removeChat } from './chatSlice';
 
-const BASE_CHAT_URL = 'http://rentalrecommender.cloud'
+const BASE_CHAT_URL = 'http://localhost:8000'
 
 const Chats = ({ onSelectChat }) => {
     const dispatch = useDispatch();

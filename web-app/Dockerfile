@@ -38,3 +38,5 @@ RUN python3 -m pip install \
 COPY app.py .
 
 COPY --from=frontend_build /usr/src/app/build ./build
+
+CMD ["uvicorn", "app:app","--host", "0.0.0.0", "--port", "3000"]

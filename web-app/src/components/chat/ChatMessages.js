@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addChat, setActiveChatId } from './chatSlice';
 
-const BASE_CHAT_URL = 'http://rentalrecommender.cloud'
+const BASE_CHAT_URL = 'http://localhost:8000'
 
 const ChatMessages = () => {
     const dispatch = useDispatch();
@@ -12,7 +12,7 @@ const ChatMessages = () => {
     const [messages, setMessages] = useState([]);
     const [isSocketOpen, setIsSocketOpen] = useState(false);
     const pendingMessageRef = useRef('');
-    const propertyIds = [1011101, 102, 103]; // Example list of property_ids
+    const propertyIds = [1804427380, 2453996480, 9123013490, 1791160704, 9183932901, 9671741739, 2871295642, 1299287467]; // Example list of property_ids
 
     const mergeChatMessages = (first, second, activeChatId) => {
         const messagesForActiveChatId = first.filter(item => item.chat_id === activeChatId);
@@ -33,7 +33,7 @@ const ChatMessages = () => {
     };
 
     const connectWebSocket = (chatId) => {
-        const ws = new WebSocket(`ws://rentalrecommender.cloud/chat-app/ws/chat/${chatId}`);
+        const ws = new WebSocket(`ws://localhost:8000/chat-app/ws/chat/${chatId}`);
 
         ws.onopen = () => {
             setIsSocketOpen(true);
@@ -150,7 +150,7 @@ const ChatMessages = () => {
         if (!activeChatId) {
             const response = await fetch(`${BASE_CHAT_URL}/chat-app/api/new-chat`, {
                 method: 'POST',
-                credentials: 'include', // Include cookies for authentication
+//                credentials: 'include', // Include cookies for authentication
                 headers: {
                     'Content-Type': 'application/json',
                 },
