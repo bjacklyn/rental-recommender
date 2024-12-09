@@ -47,14 +47,6 @@ const Filter = ({
         />
       </FilterItem>
       <FilterItem>
-        <Select
-          label="Property Type"
-          value={propertyType}
-          onChange={setPropertyType}
-          options={propertyTypeOptions}
-        />
-      </FilterItem>
-      <FilterItem>
         <Slider
           label="Bedrooms"
           value={bedrooms}

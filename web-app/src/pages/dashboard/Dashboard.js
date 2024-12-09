@@ -25,8 +25,6 @@ import {
   LoadingMessage,
   Placeholder,
 } from "./Dashboard.styles";
-import ChatMessages from '../../components/chat/ChatMessages'
-import Chats from '../../components/chat/Chats'
 
 
 
@@ -36,12 +34,6 @@ const Dashboard = ({ onSignOut }) => {
   const filterApplied = useSelector(selectDashboardFilterApplied);
   const listings = useSelector(selectDashboardListings) || [];
   const isLoading = useSelector(selectDashboardLoading);
-
-  const [chatId, setChatId] = useState('');
-
-  const onSelectChat = (id) => {
-      setChatId(id); // Update the selected chat ID
-  };
 
   useEffect(() => {
     if (filterApplied) {
@@ -58,9 +50,7 @@ const Dashboard = ({ onSignOut }) => {
     dispatch(setChatContext(property));
   };
 
-  const handleSendMessage = (message) => {
-    dispatch(sendMessage(message));
-  };
+
 
   return (
     <DashboardWrapper>
@@ -80,7 +70,6 @@ const Dashboard = ({ onSignOut }) => {
       </Section>
       {filterApplied && (
         <LayoutWrapper>
-          <div>
             {isLoading ? (
               <LoadingMessage>Loading listings...</LoadingMessage>
             ) : listings.length > 0 ? (
@@ -105,15 +94,7 @@ const Dashboard = ({ onSignOut }) => {
             ) : (
               <Placeholder>No listings found. Try adjusting the filters!</Placeholder>
             )}
-          </div>
-          <div>
-            <div className="chats-container">
-              <Chats onSelectChat={onSelectChat} />
-            </div>
-            <div className="chat-messages-container">
-              <ChatMessages chatId={chatId} />
-            </div>
-          </div>
+
         </LayoutWrapper>
       )}
     </DashboardWrapper>

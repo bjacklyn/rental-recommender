@@ -22,13 +22,14 @@ export const HeaderSection = styled.div`
 
 export const ImageWrapper = styled.div`
   flex: 2;
+  min-width: 300px;
 
   img {
     width: 100%;
-    height: auto;
+    height: 300px; /* Fixed height */
+    object-fit: cover;
     border-radius: ${({ theme }) => theme.borderRadius};
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    object-fit: cover;
   }
 `;
 
@@ -41,8 +42,6 @@ export const InfoWrapper = styled.div`
   h1 {
     font-size: 24px;
     margin-bottom: 8px;
-    color: ${({ theme }) => theme.colors.text};
-    word-break: break-word;
   }
 
   .quick-details {
@@ -59,23 +58,6 @@ export const InfoWrapper = styled.div`
     font-size: 20px;
     color: ${({ theme }) => theme.colors.primary};
     margin-bottom: 16px;
-  }
-`;
-
-export const ContactButton = styled.button`
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.textOnPrimary};
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
-    transform: translateY(-2px);
   }
 `;
 

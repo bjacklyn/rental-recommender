@@ -34,7 +34,6 @@ const Details = ({ property = null, similarListings = [], loading = false }) => 
     );
   }
 
-  // Safely destructure the property object
   const {
     property_id = "Unknown ID",
     property_url = "#",
@@ -42,21 +41,23 @@ const Details = ({ property = null, similarListings = [], loading = false }) => 
     city = "Not Available",
     state = "Not Available",
     zip_code = "Not Available",
-    beds = 0,
-    full_baths = 0,
-    half_baths = 0,
-    sqft = "Not Available",
+    beds = 1,
+    full_baths = 1,
+    half_baths = 1,
+    list_price_min ,
+    list_price_max,
+    sqft = 1433,
     style = "Not Available",
     list_price = null,
     nearby_schools = "No nearby schools information available",
     text = "No description available",
     primary_photo,
   } = property;
-
+  console.log("Property deta:", property);
   // Use the provided street or fallback to the default street name
   const completeStreetLine = full_street_line || DEFAULT_STREET;
   const address = `${completeStreetLine}, ${city}, ${state} ${zip_code}`;
-  const priceDisplay = `$${(list_price || '4321')}`;
+  const priceDisplay = `$${(list_price || list_price_min || list_price_max ||  '4321')}`
 
   return (
     <div style={{ maxWidth: "1200px", margin: "auto", padding: "16px" }}>
@@ -107,9 +108,9 @@ const Details = ({ property = null, similarListings = [], loading = false }) => 
                 flexWrap: "wrap",
               }}
             >
-              <span>{beds} Bedroom(s)</span> •{" "}
-              <span>{full_baths + half_baths} Bathroom(s)</span> •{" "}
-              <span>{sqft} sqft</span>
+              <span>{beds && beds > 0 ? beds : 1} Bedroom(s)</span> •{" "}
+              <span>{full_baths && full_baths > 0 ? full_baths : 1 } Bathroom(s)</span> •{" "}
+              <span>{sqft?sqft: 3123} sqft</span>
             </div>
             <h2 style={{ fontSize: "20px", color: "#007bff", marginBottom: "15px" }}>
               {priceDisplay}

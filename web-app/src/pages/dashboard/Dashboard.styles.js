@@ -5,12 +5,14 @@ export const DashboardWrapper = styled.div`
   padding: ${({ theme }) => theme.spacing.large};
   width: 90%;
   max-width: 1200px;
-  min-width: 768px;
+  min-width: 320px; /* Adjusted for better responsiveness */
   background-color: ${({ theme }) => theme.colors.primaryBackground};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius};
   box-shadow: ${({ theme }) => theme.boxShadow.default};
+  overflow: auto; /* Ensures content inside can scroll if needed */
 `;
+
 
 export const Header = styled.header`
   display: flex;
@@ -50,6 +52,7 @@ export const Section = styled.div`
   background-color: ${({ theme }) => theme.colors.secondaryBackground};
   border-radius: ${({ theme }) => theme.borderRadius};
   box-shadow: ${({ theme }) => theme.boxShadow.default};
+  overflow: auto; /* Ensures this section scrolls if its content overflows */
 `;
 
 export const LayoutWrapper = styled.div`
@@ -63,10 +66,12 @@ export const LayoutWrapper = styled.div`
     border-radius: ${({ theme }) => theme.borderRadius};
     padding: ${({ theme }) => theme.spacing.medium};
     box-shadow: ${({ theme }) => theme.boxShadow.default};
+    overflow: hidden; /* Prevents unintended scroll in child containers */
   }
 
   @media (max-width: 768px) {
     flex-direction: column;
+    overflow: visible; /* Ensures child elements stack properly */
   }
 `;
 
@@ -88,4 +93,8 @@ export const Placeholder = styled.div`
   font-size: 16px;
   color: ${({ theme }) => theme.colors.secondaryText};
   font-weight: ${({ theme }) => theme.typography.bodyFontWeight};
+  overflow: hidden; /* Prevents clipping within this component */
+  @media (max-width: 768px) {
+    min-height: 150px; /* Adjust for smaller screens */
+  }
 `;

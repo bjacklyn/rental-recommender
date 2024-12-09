@@ -67,7 +67,7 @@ const Card = ({ data, onClick }) => {
       <Info>
         <Title>{title}</Title>
         <Price>{price}</Price>
-        <Details>{bedrooms} Beds • {bathrooms} Baths</Details>
+        <Details>{bedrooms && bedrooms > 0 ? bedrooms : 1 } Beds • {bathrooms && bathrooms > 0 ? bathrooms : 1} Baths</Details>
         <Button>View Details</Button>
       </Info>
     </CardWrapper>

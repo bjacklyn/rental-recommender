@@ -1,18 +1,12 @@
 import styled from "styled-components";
 
 export const ListWrapper = styled.div`
-  flex: 2;
-  padding: 16px;
-
-  .ant-row {
-    margin: 0; /* Reset Row margins for consistent spacing */
-  }
+  max-height: 80vh; /* Adjust the height as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
 `;
 
-export const EmptyMessage = styled.p`
+export const EmptyMessage = styled.div`
   text-align: center;
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 16px;
   margin-top: 20px;
 `;
 

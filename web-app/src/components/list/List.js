@@ -13,7 +13,7 @@ const List = ({ items = [] }) => {
   const navigate = useNavigate();
 
   const handleItemClick = (id) => {
-    navigate(`/listing/${id}`);
+    navigate(`/web-app/listing/${id}`);
   };
 
   const handlePageChange = (page) => {
