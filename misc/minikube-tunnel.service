@@ -1,0 +1,11 @@
+[Unit]
+Description=Minikube Tunnel Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/minikube tunnel
+Restart=always
+User=<your-username>
+
+[Install]
+WantedBy=default.target
