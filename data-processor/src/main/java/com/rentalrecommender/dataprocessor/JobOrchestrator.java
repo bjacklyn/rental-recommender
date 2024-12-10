@@ -17,14 +17,11 @@ public class JobOrchestrator {
     public static void main(String[] args) throws Exception {
         TracingConfig.initTracing();
 
-        // Get the global tracer
         Tracer tracer = GlobalOpenTelemetry.getTracer("RealtorCom-Job");
 
-        // Set up the Flink execution environment
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.enableCheckpointing(5000); // 5000ms checkpoint interval
+        env.enableCheckpointing(5000); 
 
-        // Create the Kafka source for RealtorCom messages
         DataStream<RealtorCom> realtorComStream = RealtorComKafkaSource.createSource(env)
                 .map(kafkaMessage -> {
                     Span span = tracer.spanBuilder("Extract Payload").startSpan();
@@ -37,7 +34,6 @@ public class JobOrchestrator {
                     }
                 }).name("Extract RealtorCom Payload");
 
-        // Transform the RealtorCom objects into Property objects
         RealtorComToPropertyTransformer transformer = new RealtorComToPropertyTransformer();
         DataStream<Property> propertyStream = realtorComStream
                 .map(realtorCom -> {
@@ -51,11 +47,9 @@ public class JobOrchestrator {
                     }
                 }).name("Transform RealtorCom to Property");
 
-        // Write the Property objects to MongoDB
         propertyStream.addSink(new PropertyMongoDbSink())
                 .name("MongoDB Sink");
 
-        // Execute the Flink job
         env.execute("RealtorComToProperty");
     }
 }

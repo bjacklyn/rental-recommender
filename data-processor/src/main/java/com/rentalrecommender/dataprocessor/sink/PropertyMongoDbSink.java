@@ -9,9 +9,6 @@ import com.rentalrecommender.dataprocessor.model.Property;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.bson.Document;
 
-/**
- * MongoDB sink for writing Property objects to MongoDB with upsert functionality.
- */
 @SuppressWarnings("deprecation")
 public class PropertyMongoDbSink implements SinkFunction<Property> {
     private static final String COLLECTION_NAME = "sample";
@@ -85,7 +82,6 @@ public class PropertyMongoDbSink implements SinkFunction<Property> {
                 .append("primaryPhoto", value.getPrimaryPhoto())
                 .append("altPhotos", value.getAltPhotos());
 
-        // Perform the upsert operation
         ReplaceOptions options = new ReplaceOptions().upsert(true);
         collection.replaceOne(Filters.eq("propertyId", value.getPropertyId()), document, options);
     }

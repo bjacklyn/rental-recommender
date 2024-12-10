@@ -2,9 +2,6 @@ package com.rentalrecommender.dataprocessor.common;
 
 import lombok.Data;
 
-/**
- * Represents the trace context for distributed tracing.
- */
 @Data
 public class TraceContext {
 

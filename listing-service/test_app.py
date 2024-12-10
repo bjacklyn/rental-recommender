@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from app import app  # Replace `main` with your FastAPI application file name
+from app import app  
 
 @pytest.mark.asyncio
 async def test_get_filtered_properties_empty():
@@ -55,7 +55,6 @@ async def test_get_filtered_properties_with_params():
         headers = {"Content-Type": "application/json"}
         response = await client.post("/api/v1/housing-properties", json=payload, headers=headers)
     assert response.status_code == 200
-    # Assuming no properties exist, it should return an empty list
     assert "properties" in response.json()
 
 @pytest.mark.asyncio

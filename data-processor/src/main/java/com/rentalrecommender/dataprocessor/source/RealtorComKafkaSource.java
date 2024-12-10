@@ -16,20 +16,11 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.io.IOException;
 
-/**
- * Flink Kafka Source for RealtorCom data.
- */
 public class RealtorComKafkaSource {
 
-    private static final String TOPIC = "realtorcom"; // Topic name for RealtorCom data
-    private static final String GROUP_ID = "realtorcom"; // Consumer group ID for RealtorCom
+    private static final String TOPIC = "realtorcom"; 
+    private static final String GROUP_ID = "realtorcom"; 
 
-    /**
-     * Creates a Kafka source for RealtorCom messages.
-     *
-     * @param env Flink StreamExecutionEnvironment.
-     * @return A DataStream of KafkaMessage containing RealtorCom objects.
-     */
     public static DataStream<KafkaMessage<RealtorCom>> createSource(StreamExecutionEnvironment env) {
         KafkaSource<KafkaMessage<RealtorCom>> kafkaSource = KafkaSource.<KafkaMessage<RealtorCom>>builder()
                 .setBootstrapServers(KafkaConfig.BOOTSTRAP_SERVERS)
@@ -41,9 +32,6 @@ public class RealtorComKafkaSource {
         return env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "RealtorCom Kafka Source");
     }
 
-    /**
-     * Deserialization schema for converting Kafka messages into KafkaMessage<RealtorCom> objects.
-     */
     public static class KafkaMessageDeserializationSchema implements DeserializationSchema<KafkaMessage<RealtorCom>> {
         private final ObjectMapper objectMapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

@@ -12,35 +12,28 @@ import os
 from dotenv import load_dotenv
 from tracing import configure_tracer
 
-# Load environment variables
 load_dotenv()
 
-# Initialize FastAPI app
 app = FastAPI()
 
-# Feature Flag for Tracing
 configure_tracer(app)
 
 
-# CORS Configuration
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*")  # Default to all origins if not set
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*") 
 origins = ALLOWED_ORIGINS.split(",") if ALLOWED_ORIGINS != "*" else ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Origins from .env or allow all
+    allow_origins=origins,  
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
 
-# Function to build MongoDB query
 def build_query(params: PropertyQueryParams):
     query = {}
-    # Your existing build_query logic here
     return query
 
-# POST Endpoint to Fetch Properties by IDs
 @app.post("/api/v1/housing-properties", response_model=PropertiesResponse)
 async def get_properties_by_ids(property_ids: PropertyIDs):
     return await fetch_properties(property_ids)
@@ -63,7 +56,6 @@ async def fetch_properties(property_ids: PropertyIDs):
 
     return PropertiesResponse(properties=properties)
 
-# GET Endpoint to Fetch Filtered Properties
 @app.get("/api/v1/housing-properties", response_model=PropertiesResponse)
 async def get_filtered_properties(
     params: PropertyQueryParams = Depends(), authorization: Optional[str] = Header(None)

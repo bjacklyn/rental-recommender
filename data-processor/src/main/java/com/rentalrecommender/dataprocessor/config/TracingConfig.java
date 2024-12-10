@@ -16,17 +16,13 @@ public class TracingConfig {
                 .setEndpoint(OLTP_ENDPOINT)
                 .build();
 
-        // Configure tracer provider
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(otlpExporter).build())
                 .build();
 
-        // Configure OpenTelemetry
         OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder()
                 .setTracerProvider(tracerProvider)
                 .build();
-
-        // Set the global OpenTelemetry instance
         GlobalOpenTelemetry.set(openTelemetrySdk);
         return openTelemetrySdk;
     }

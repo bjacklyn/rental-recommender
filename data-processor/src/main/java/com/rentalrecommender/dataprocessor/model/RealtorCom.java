@@ -4,9 +4,6 @@ import lombok.Data;
 
 import java.util.List;
 
-/**
- * Core property model for Realtor.com.
- */
 @Data
 public class RealtorCom {
 
@@ -50,8 +47,8 @@ public class RealtorCom {
         private Integer stories;
         private Boolean garage;
         private Integer lotSqft;
-        private List<String> altPhotos; // Array of photo URLs
-        private String text;           // Property description text
+        private List<String> altPhotos; 
+        private String text;          
     }
 
     @Data
@@ -83,7 +80,7 @@ public class RealtorCom {
         private String agentId;
         private String agentName;
         private String agentEmail;
-        private List<String> agentPhones; // List of phones parsed from JSON
+        private List<String> agentPhones; 
         private String agentMlsSet;
         private String agentNrdsId;
     }
@@ -103,7 +100,7 @@ public class RealtorCom {
     public static class OfficeInfo {
         private String officeId;
         private String officeName;
-        private List<String> officePhones; // List of phones parsed from JSON
+        private List<String> officePhones;
         private String officeEmail;
         private String officeMlsSet;
     }
@@ -113,6 +110,6 @@ public class RealtorCom {
         private String number;
         private String type;
         private Boolean primary;
-        private String ext; // Extension, if any
+        private String ext; 
     }
 }

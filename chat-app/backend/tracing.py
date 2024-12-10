@@ -8,9 +8,9 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from fastapi import FastAPI
 
 def configure_tracer(app: FastAPI):
-    # Configure the OTLP exporter
+    # setup oltp exporter
     otlp_exporter = OTLPSpanExporter(
-        endpoint='jaeger.tracing:4317',  # Adjust the endpoint to your Jaeger setup
+        endpoint='jaeger.tracing:4317',  
         insecure=True,  # Use `True` if your Jaeger instance doesn't use TLS
     )
 
@@ -18,7 +18,6 @@ def configure_tracer(app: FastAPI):
         "service.name": "chat-app"
     })
 
-    # Set up trace provider with the OTLP exporter
     trace.set_tracer_provider(
         TracerProvider(resource=resource)
     )

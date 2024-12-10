@@ -18,7 +18,7 @@ spec:
       - name: fastapi-app
         image: fastapi-app:latest
         ports:
-        - containerPort: 8010  # Use port 8010 inside the container
+        - containerPort: 8010  
         env:
         - name: MONGODB_URL
           value: "mongodb://dev:MongoDBDev@localhost:27017/dev?directConnection=true&authSource=dev"
@@ -38,7 +38,7 @@ spec:
     app: fastapi
   ports:
     - protocol: TCP
-      port: 8010  # Expose port 8010 on the service
-      targetPort: 8010  # Map to container port 8010
+      port: 8010  
+      targetPort: 8010  
   type: LoadBalancer
 

@@ -8,14 +8,12 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Clone the repository
                 checkout scm
             }
         }
 
                 stage('Install Dependencies') {
             steps {
-                // Install dependencies
                 dir('listing-service') {
                     sh '''
                     python -m pip install --upgrade pip
@@ -26,7 +24,6 @@ pipeline {
         }
         stage('Run Tests') {
             steps {
-                // Run the test cases
                 dir('listing-service') {
                     sh '''
                     export PATH=$PATH:/var/lib/jenkins/.local/bin
@@ -39,7 +36,6 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                // Navigate to listing-service and build the Docker image
                 dir('listing-service') {
                     sh '''
                     docker build -t $DOCKER_IMAGE .
@@ -50,7 +46,6 @@ pipeline {
         stage('Stop Existing Container') {
             steps {
                 script {
-                    // Stop and remove the existing container if it exists
                    sh '''
                     CONTAINER_ID=$(docker ps -aq --filter name=listing-service-container)
                     if [ -n "$CONTAINER_ID" ]; then
@@ -65,7 +60,6 @@ pipeline {
         }
         stage('Run Docker Container') {
             steps {
-                // Run the Docker container with the specified name and port mapping
                 sh '''
                 docker run -d \
                     -p $APP_PORT:$APP_PORT \

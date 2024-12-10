@@ -6,9 +6,6 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
 
-/**
- * Configuration class for MongoDB connection.
- */
 public class MongoDbConfig {
 
     private static final String CONNECTION_STRING = "mongodb://dev:MongoDBDev@18.119.153.150:27017/dev?authSource=dev";

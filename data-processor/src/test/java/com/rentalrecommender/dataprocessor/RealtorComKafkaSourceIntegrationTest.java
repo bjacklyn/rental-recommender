@@ -25,14 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class RealtorComKafkaSourceIntegrationTest {
 
     private static final String TOPIC = "realtorcom";
-    private static final String BOOTSTRAP_SERVERS = KafkaConfig.BOOTSTRAP_SERVERS; // Adjust based on your Kafka setup
+    private static final String BOOTSTRAP_SERVERS = KafkaConfig.BOOTSTRAP_SERVERS; 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final List<KafkaMessage<RealtorCom>> results = new ArrayList<>();
     private static KafkaProducer<String, String> producer;
 
     @BeforeAll
     static void setupKafkaProducer() {
-        // Set up Kafka producer properties
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
@@ -42,7 +41,6 @@ public class RealtorComKafkaSourceIntegrationTest {
 
     @Test
     public void testKafkaSourceWithSingleMessage() throws Exception {
-        // Produce a single message to Kafka
         RealtorCom.PropertyInfo propertyInfo = new RealtorCom.PropertyInfo();
         propertyInfo.setPropertyId("12345");
         propertyInfo.setPropertyUrl("/property/12345");
@@ -65,11 +63,9 @@ public class RealtorComKafkaSourceIntegrationTest {
         producer.send(new ProducerRecord<>(TOPIC, "key", jsonMessage));
         producer.flush();
 
-        // Set up Flink environment
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
 
-        // Consume the Kafka topic and collect the output
         DataStream<KafkaMessage<RealtorCom>> sourceStream = RealtorComKafkaSource.createSource(env);
         sourceStream.addSink(new SinkFunction<>() {
             @Override
@@ -79,9 +75,5 @@ public class RealtorComKafkaSourceIntegrationTest {
                 assertEquals("123 Main St", resultMessage.getPayload().getAddress().getStreet());
             }
         });
-
-        // Execute the Flink job
-
-
     }
 }

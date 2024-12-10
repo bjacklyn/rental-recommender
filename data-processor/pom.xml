@@ -44,7 +44,6 @@
 			<version>1.20.0</version>
 		</dependency>
 
-		<!-- Test utilities (optional for tests) -->
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-test-utils-junit</artifactId>
@@ -82,14 +81,12 @@
 		</dependency>
 
 
-		<!-- MongoDB -->
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>4.11.0</version>
 		</dependency>
 
-		<!-- Jackson for JSON -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -101,7 +98,6 @@
 			<version>2.15.2</version>
 		</dependency>
 
-		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -109,7 +105,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- OpenTelemetry for Distributed Tracing -->
 		<dependency>
 			<groupId>io.opentelemetry</groupId>
 			<artifactId>opentelemetry-api</artifactId>
@@ -131,7 +126,6 @@
 			<version>1.29.0</version>
 		</dependency>
 
-		<!-- Prometheus Java Simple Client -->
 		<dependency>
 			<groupId>io.prometheus</groupId>
 			<artifactId>simpleclient</artifactId>
@@ -148,7 +142,6 @@
 			<version>${prometheus.version}</version>
 		</dependency>
 
-		<!-- Logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -178,7 +171,6 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- JUnit -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -189,7 +181,6 @@
 
 	<build>
 		<plugins>
-			<!-- Maven Compiler Plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -213,7 +204,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- Maven Shade Plugin for Fat JAR -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
