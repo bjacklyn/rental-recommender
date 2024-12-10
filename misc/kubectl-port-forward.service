@@ -1,0 +1,12 @@
+[Unit]
+Description=Kubectl Port Forward for ingress-nginx
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/kubectl port-forward -n ingress-nginx --address 0.0.0.0 service/ingress-nginx-controller 80:80 443:443
+Restart=always
+RestartSec=5
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Launch a EC2 instance with Minikube, Docker installed, and configurable hostname"
+
+Parameters:
+  InstanceHostname:
+    Description: "The hostname for the EC2 instance"
+    Type: String
+    Default: "minikube-instance"
+    AllowedPattern: "^[a-zA-Z0-9-]+$"
+    ConstraintDescription: "Hostname can contain only letters, numbers, and hyphens."
+
+Resources:
+  MinikubeInstance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      InstanceType: "t3.large"
+      KeyName: "aws-common-access-key" 
+      ImageId: "ami-00eb69d236edcfaf8"
+      SecurityGroupIds:
+        - "sg-0a5f5e0f4cae3084e"
+      BlockDeviceMappings:
+        - DeviceName: "/dev/xvda"
+          Ebs:
+            VolumeSize: 20
+            VolumeType: gp2
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash
+            set -ex
+
+            # Set the hostname
+            hostnamectl set-hostname ${InstanceHostname}
+
+            # Update and install dependencies
+            apt-get update -y
+            apt-get upgrade -y
+            apt-get install -y apt-transport-https ca-certificates curl software-properties-common git wget
+
+            # Install Docker
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+            apt-get update -y
+            apt-get install -y docker-ce
+            systemctl start docker
+            systemctl enable docker
+
+            # Install Minikube
+            curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+            chmod +x minikube
+            mv minikube /usr/local/bin/
+
+            # Install kubectl
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/
+
+            # Start Minikube
+            minikube start --driver=docker
+
+            # Output Kubernetes cluster details
+            mkdir -p /home/ubuntu/minikube
+            echo "Minikube Kubernetes Cluster is ready!" > /home/ubuntu/minikube/cluster-details.txt
+            kubectl cluster-info >> /home/ubuntu/minikube/cluster-details.txt
+            kubectl get nodes >> /home/ubuntu/minikube/cluster-details.txt
+
+            # Change ownership of the directory
+            chown -R ubuntu:ubuntu /home/ubuntu/minikube
+
+Outputs:
+  InstanceId:
+    Description: "Instance ID of the EC2 instance"
+    Value: !Ref MinikubeInstance
+
+  PublicIP:
+    Description: "Public IP address of the EC2 instance"
+    Value: !GetAtt MinikubeInstance.PublicIp
+
+  Hostname:
+    Description: "Hostname of the EC2 instance"
+    Value: !Ref InstanceHostname
+
+  ClusterDetails:
+    Description: "Path to Kubernetes cluster details on the instance"
+    Value: "/home/ubuntu/minikube/cluster-details.txt"
