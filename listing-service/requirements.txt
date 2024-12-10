@@ -41,3 +41,8 @@ websockets==14.1
 pytest==6.2.5
 pytest-asyncio==0.15.1
 motor
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-requests
+opentelemetry-exporter-otlp
