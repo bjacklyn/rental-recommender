@@ -97,7 +97,11 @@ const Card = ({ data, onClick }) => {
 
   return (
     <CardWrapper onClick={onClick}>
-      <Image src={primary_photo} alt={title} />
+      <Image src={primary_photo}      onError={({ currentTarget }) => {
+              currentTarget.onerror = null; // prevents looping
+              currentTarget.src="https://cdn.prod.website-files.com/5ec257673687b0d0f7d61e67/60741e003536396624b511fe_owning-empty-house-selling-empty-house-main-image-yes-homebuyers.jpeg";
+            }}
+            alt={title} />
       <Info>
         <Title>{address_line}</Title>
         <Price>{`$${priceVal}`}</Price>

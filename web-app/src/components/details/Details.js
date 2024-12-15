@@ -95,6 +95,10 @@ const Details = ({ property, similarListings, loading }) => {
         <div style={{ flex: "2", minWidth: "300px" }}>
           <img
             src={primary_photo}
+            onError={({ currentTarget }) => {
+              currentTarget.onerror = null; // prevents looping
+              currentTarget.src="https://cdn.prod.website-files.com/5ec257673687b0d0f7d61e67/60741e003536396624b511fe_owning-empty-house-selling-empty-house-main-image-yes-homebuyers.jpeg";
+            }}
             alt="Property"
             style={{
               width: "100%",
