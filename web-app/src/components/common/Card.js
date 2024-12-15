@@ -106,6 +106,7 @@ const Card = ({ data, onClick }) => {
         <Title>{address_line}</Title>
         <Price>{`$${priceVal}`}</Price>
         <Details>{calculated_beds} Beds • {calculated_baths} Baths</Details>
+        <Details>Property Id: {data.property_id}</Details>
         <Button onClick={handleItemClick}>View Details</Button>
       </Info>
     </CardWrapper>

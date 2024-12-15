@@ -135,6 +135,7 @@ const Details = ({ property, similarListings, loading }) => {
               <span>{calculated_beds} Bedroom(s)</span> •{" "}
               <span>{calculated_baths} Bathroom(s)</span>
               <span>{calculated_sqft > 0 ? `• ${calculated_sqft} sqft` : ''}</span>
+              <span>Property Id: {property.property_id}</span>
             </div>
             <h2 style={{ fontSize: "20px", color: "#007bff", marginBottom: "15px" }}>
               {priceVal ? `$${priceVal}` : "Unknown"}

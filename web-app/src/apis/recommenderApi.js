@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://3.145.200.135:8080"
+const BASE_URL = "http://3.141.10.84:8080"
 
 export const getRecomendedProperties = async (propertyId) => {
     try {
