@@ -9,13 +9,25 @@ import requests
 
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 from collections import defaultdict
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import APIRouter, FastAPI, Query, Request, HTTPException
 from pathlib import Path
 from sklearn.cluster import KMeans
 from typing import List
 
+ENV_TEST_FLAG = True
+
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*") 
+origins = ALLOWED_ORIGINS.split(",") if ALLOWED_ORIGINS != "*" else ["*"]
 
 app = FastAPI(root_path="/rental-recommender")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
 router = APIRouter()
 s3_client = boto3.client('s3')
 
@@ -30,7 +42,6 @@ NUM_RECOMMENDATIONS = 3
 current_model = None
 current_model_version = None
 df = None
-
 
 def get_latest_file():
     response = s3_client.list_objects_v2(Bucket='rentalrecommender')
@@ -85,6 +96,9 @@ async def download_latest_model_loop():
 
 @app.on_event("startup")
 async def start_background_task():
+    if ENV_TEST_FLAG:
+        print("Skipping model download while testing..")
+        return
     await download_latest_model()
     asyncio.create_task(download_latest_model_loop())
 
@@ -99,15 +113,10 @@ def fetch_listings(requests_func, search_criteria):
         if response.status_code == 200:
             api_response = response.json()
             print(f"API response: {api_response}")
-            properties = []
             if isinstance(api_response, list):
-                properties = api_response
+                property_details = api_response
             elif isinstance(api_response, dict):
-                properties = api_response.get("properties", [])
-
-            for property_data in properties:
-                property_id = property_data.get("property_id")
-                property_details[property_id] = property_data
+                property_details = api_response.get("properties", [])
         else:
             print(f"Failed to fetch property details from API. Status: {response.status_code}, Response: {response.text}")
     except requests.RequestException as e:
@@ -125,9 +134,9 @@ def fetch_listings_by_zip_code(zip_code, property_id):
     return df[(df['zip_code'] == zip_code) & (df['property_id'] != property_id)].to_dict(orient='records')
 
 
-#def fetch_listings_by_property_ids(property_ids):
-#    search_criteria = {"property_ids": property_ids}
-#    return fetch_listings(requests.post, search_criteria)
+def fetch_listings_by_property_ids_api(property_ids):
+    search_criteria = {"property_ids": property_ids}
+    return fetch_listings(requests.post, search_criteria)
 
 
 def fetch_listings_by_property_ids(property_ids):
@@ -181,21 +190,28 @@ async def get_rental_recommendations(property_id: int):
     zip_code = property_id_details[0]["zip_code"]
     same_zip_code_property_details = fetch_listings_by_zip_code(zip_code, property_id)
 
-    # 3) Run properties through the clustering model inference
-    property_id_predicted_label  = predict(property_id_details)[property_id]
-    print(f"Predicted label {property_id_predicted_label} for property id {property_id}")
+    property_ids = []
+    if ENV_TEST_FLAG:
+        property_ids = [property['property_id'] for property in same_zip_code_property_details]
+        print("property_ids", property_ids)
+    else:
+        # 3) Run properties through the clustering model inference
+        property_id_predicted_label  = predict(property_id_details)[property_id]
+        print(f"Predicted label {property_id_predicted_label} for property id {property_id}")
 
-    same_zip_code_predicted_labels = predict(same_zip_code_property_details)
-    print(same_zip_code_predicted_labels)
+        same_zip_code_predicted_labels = predict(same_zip_code_property_details)
+        print(same_zip_code_predicted_labels)
 
-    # 4) Filter other properties by those in same cluster as original property_id
-    clustered_property_ids = [property_id for property_id, predicted_label in same_zip_code_predicted_labels.items() if predicted_label == property_id_predicted_label]
-    print(clustered_property_ids)
+        # 4) Filter other properties by those in same cluster as original property_id
+        clustered_property_ids = [property_id for property_id, predicted_label in same_zip_code_predicted_labels.items() if predicted_label == property_id_predicted_label]
+        print(clustered_property_ids)
 
-    print(len(same_zip_code_predicted_labels.keys()))
-    print(len(clustered_property_ids))
+        print(len(same_zip_code_predicted_labels.keys()))
+        print(len(clustered_property_ids))
+        property_ids = random.sample(clustered_property_ids, NUM_RECOMMENDATIONS)
 
-    return random.sample(clustered_property_ids, NUM_RECOMMENDATIONS)
+    properties = fetch_listings_by_property_ids_api(property_ids)
+    return {"properties":properties}
 
 
 def preprocess_data(df):
