@@ -2,11 +2,11 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPropertyDetails,
- // fetchSimilarListings,
+  fetchSimilarListings,
 } from "./state";
 import {
   selectPropertyDetails,
- //selectSimilarListings,
+  selectSimilarListings,
   selectPropertyLoading,
   selectPropertyError,
 } from "./constants";
@@ -16,13 +16,13 @@ import { PropertyWrapper } from "./Property.styles";
 const Property = ({ propertyId }) => {
   const dispatch = useDispatch();
   const property = useSelector(selectPropertyDetails);
-  const similarListings = []; //useSelector(selectSimilarListings);
+  const similarListings = useSelector(selectSimilarListings);
   const isLoading = useSelector(selectPropertyLoading);
   const error = useSelector(selectPropertyError);
 
   useEffect(() => {
-    dispatch(fetchPropertyDetails([propertyId])); // Correct POST payload
-  //  dispatch(fetchSimilarListings(propertyId)); // Optional: Fetch similar listings
+    dispatch(fetchPropertyDetails([propertyId])); 
+    dispatch(fetchSimilarListings(propertyId)); 
   }, [dispatch, propertyId]);
 
   // Debugging Logs

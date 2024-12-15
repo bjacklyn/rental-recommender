@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const CardWrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -59,16 +60,49 @@ const Button = styled.button`
 `;
 
 const Card = ({ data, onClick }) => {
-  const { primary_photo, title, price, bedrooms, bathrooms } = data;
+  if(data.property){
+    data = data.property;
+  }
+  const navigate = useNavigate();
+
+  const handleItemClick = () => {
+    navigate(`/web-app/listing/${data.property_id}`);
+  };
+
+  const { primary_photo, title, price, bedrooms, bathrooms,  } = data;
+  console.log(data);
+
+  let calculated_beds = 0, calculated_baths = 0; 
+  if(!isNaN(data.full_baths)){
+    calculated_baths = data.full_baths;
+  }
+  if(!isNaN(data.half_baths)){
+    calculated_baths = calculated_baths + data.half_baths/2;
+  }
+  if(!isNaN(data.beds)){
+    calculated_beds = data.beds;
+  }
+  if(calculated_beds < 1){
+    calculated_beds = 1;
+  }
+  if(calculated_baths < 1){
+    calculated_baths = 1;
+  }
+
+  console.log(data)
+  
+  let priceVal = data.list_price || data.list_price_min || data.list_price_max;
+
+  let address_line = data.full_street_line || data.address;
 
   return (
     <CardWrapper onClick={onClick}>
       <Image src={primary_photo} alt={title} />
       <Info>
-        <Title>{title}</Title>
-        <Price>{price}</Price>
-        <Details>{bedrooms && bedrooms > 0 ? bedrooms : 1 } Beds • {bathrooms && bathrooms > 0 ? bathrooms : 1} Baths</Details>
-        <Button>View Details</Button>
+        <Title>{address_line}</Title>
+        <Price>{`$${priceVal}`}</Price>
+        <Details>{calculated_beds } Beds • {calculated_baths} Baths</Details>
+        <Button onClick={handleItemClick}>View Details</Button>
       </Info>
     </CardWrapper>
   );

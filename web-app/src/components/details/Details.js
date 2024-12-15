@@ -1,63 +1,83 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { Carousel, Collapse, Spin } from "antd";
+import { Collapse } from "antd";
 import Card from "../common/Card";
+import styled from "styled-components";
 
 const { Panel } = Collapse;
 
-// Subtle default street name
-const DEFAULT_STREET = "456 Elm Street";
+const GridWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+`;
 
-const Details = ({ property = null, similarListings = [], loading = false }) => {
-  const placeholderImage = "https://via.placeholder.com/300x200?text=No+Image";
+const ViewMoreButton = styled.button`
+  display: block;
+  margin: 24px auto;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
 
-  // Function to generate a random price if not available
-  const getRandomPrice = () => Math.floor(Math.random() * 1000000) + 50000;
-
-  // Show a loading spinner while data is being fetched
-  if (loading) {
-    return (
-      <div style={{ maxWidth: "1200px", margin: "auto", padding: "16px" }}>
-        <Spin size="large" style={{ margin: "20% auto", display: "block" }} />
-      </div>
-    );
+  &:hover {
+    background-color: #0056b3;
   }
+`;
 
-  // Check if the property is still null and display a fallback
-  if (!property) {
-    return (
-      <div style={{ maxWidth: "1200px", margin: "auto", padding: "16px" }}>
-        <p style={{ textAlign: "center", margin: "20% auto", fontSize: "16px", color: "#888" }}>
-          Property details are not available.
-        </p>
-      </div>
-    );
-  }
+const Details = ({ property, similarListings, loading }) => {
+  const [showAll, setShowAll] = useState(false);
+  if(!property || loading) return <p>Loading property details...</p>;
 
   const {
-    property_id = "Unknown ID",
-    property_url = "#",
+    property_id,
+    property_url,
     full_street_line,
-    city = "Not Available",
-    state = "Not Available",
-    zip_code = "Not Available",
-    beds = 1,
-    full_baths = 1,
-    half_baths = 1,
-    list_price_min ,
-    list_price_max,
-    sqft = 1433,
-    style = "Not Available",
-    list_price = null,
-    nearby_schools = "No nearby schools information available",
-    text = "No description available",
+    city,
+    state,
+    zip_code,
+    beds,
+    full_baths,
+    half_baths,
+    sqft,
+    style,
+    list_price,
+    nearby_schools,
+    text,
     primary_photo,
   } = property;
-  console.log("Property deta:", property);
-  // Use the provided street or fallback to the default street name
-  const completeStreetLine = full_street_line || DEFAULT_STREET;
-  const address = `${completeStreetLine}, ${city}, ${state} ${zip_code}`;
-  const priceDisplay = `$${(list_price || list_price_min || list_price_max ||  '4321')}`
+
+
+  let calculated_beds = 0, calculated_baths = 0, calculated_sqft = 1533; 
+  if(!isNaN(property.full_baths)){
+    calculated_baths = property.full_baths;
+  }
+  if(!isNaN(property.half_baths)){
+    calculated_baths = calculated_baths + property.half_baths/2;
+  }
+  if(!isNaN(property.beds)){
+    calculated_beds = property.beds;
+  }
+  if(calculated_beds < 1){
+    calculated_beds = 1;
+  }
+  if(calculated_baths < 1){
+    calculated_baths = 1;
+  }
+  if(!isNaN(property.sqft)){
+    calculated_sqft = property.sqft;
+  }
+  
+  let priceVal = property.list_price || property.list_price_min || property.list_price_max;
+
+  let address_line = property.full_street_line || property.address;
+
+  const displayedListings = showAll ? similarListings : similarListings.slice(0, 3);
 
   return (
     <div style={{ maxWidth: "1200px", margin: "auto", padding: "16px" }}>
@@ -74,7 +94,7 @@ const Details = ({ property = null, similarListings = [], loading = false }) => 
         {/* Image Section */}
         <div style={{ flex: "2", minWidth: "300px" }}>
           <img
-            src={primary_photo || placeholderImage}
+            src={primary_photo}
             alt="Property"
             style={{
               width: "100%",
@@ -97,7 +117,7 @@ const Details = ({ property = null, similarListings = [], loading = false }) => 
           }}
         >
           <div>
-            <h1 style={{ fontSize: "24px", marginBottom: "10px", color: "#333" }}>{address}</h1>
+            <h1 style={{ fontSize: "24px", marginBottom: "10px", color: "#333" }}>{full_street_line}</h1>
             <div
               style={{
                 fontSize: "14px",
@@ -108,12 +128,12 @@ const Details = ({ property = null, similarListings = [], loading = false }) => 
                 flexWrap: "wrap",
               }}
             >
-              <span>{beds && beds > 0 ? beds : 1} Bedroom(s)</span> •{" "}
-              <span>{full_baths && full_baths > 0 ? full_baths : 1 } Bathroom(s)</span> •{" "}
-              <span>{sqft?sqft: 3123} sqft</span>
+              <span>{calculated_beds} Bedroom(s)</span> •{" "}
+              <span>{calculated_baths} Bathroom(s)</span>
+              <span>{calculated_sqft > 0 ? `• ${calculated_sqft} sqft` : ''}</span>
             </div>
             <h2 style={{ fontSize: "20px", color: "#007bff", marginBottom: "15px" }}>
-              {priceDisplay}
+              {priceVal ? `$${priceVal}` : "Unknown"}
             </h2>
           </div>
           <a
@@ -153,11 +173,13 @@ const Details = ({ property = null, similarListings = [], loading = false }) => 
           <Panel header="Property Details" key="2" style={{ fontSize: "16px" }}>
             <ul style={{ paddingLeft: "20px", margin: 0 }}>
               <li>
-                <strong>Style:</strong> {style}
+                <strong>Style:</strong> {property.style}
               </li>
-              <li>
-                <strong>Nearby Schools:</strong> {nearby_schools}
-              </li>
+              {nearby_schools && (
+                <li>
+                  <strong>Nearby Schools:</strong> {nearby_schools}
+                </li>
+              )}
             </ul>
           </Panel>
         </Collapse>
@@ -165,26 +187,22 @@ const Details = ({ property = null, similarListings = [], loading = false }) => 
 
       {/* Similar Listings Section */}
       {similarListings.length > 0 && (
-        <div style={{ marginTop: "24px" }}>
+        <div>
           <h3 style={{ marginBottom: "16px", fontSize: "20px", color: "#333" }}>Similar Listings</h3>
-          <Carousel dots={true} slidesToShow={3} autoplay>
-            {similarListings.map((listing) => (
-              <div
+          <GridWrapper>
+            {displayedListings.map((listing) => (
+              <Card
                 key={listing.property_id || `similar_${Math.random()}`}
-                style={{
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <Card
-                  data={listing}
-                  onClick={() => console.log(`Navigate to property ${listing.property_id}`)}
-                />
-              </div>
+                data={listing}
+                onClick={() => console.log(`Navigate to property ${listing.property_id}`)}
+              />
             ))}
-          </Carousel>
+          </GridWrapper>
+          {!showAll && similarListings.length > 3 && (
+            <ViewMoreButton onClick={() => setShowAll(true)}>
+              View More
+            </ViewMoreButton>
+          )}
         </div>
       )}
     </div>

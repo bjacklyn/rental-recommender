@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getPropertyDetails } from "../../apis/listingApi"; // Import the POST API function
+import { getPropertyDetails } from "../../apis/listingApi"; 
+import { getRecomendedProperties } from "../../apis/recommenderApi";
+
 
 // Async Thunk to Fetch Property Details (POST Endpoint)
 export const fetchPropertyDetails = createAsyncThunk(
@@ -17,28 +19,24 @@ export const fetchPropertyDetails = createAsyncThunk(
   }
 );
 
-// Async Thunk to Fetch Similar Listings
+// Async Thunk to Fetch Recommended Listings
 
-/*
+
 export const fetchSimilarListings = createAsyncThunk(
   "property/fetchSimilarListings",
   async (propertyId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/properties/${propertyId}/similar`);
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.message || "Failed to fetch similar listings");
-      }
-      return await response.json();
+      const data = await getRecomendedProperties(propertyId);
+      return data; // Return property details
     } catch (error) {
-      console.error("Error fetching similar listings:", error); // Debugging info
+      console.error("Error fetching property details:", error); // Debugging info
       return rejectWithValue(
-        error.message || "Failed to fetch similar listings"
+        error.response?.data || error.message || "Failed to fetch property details"
       );
     }
   }
 );
-*/
+
 
 const initialState = {
   propertyDetails: null, // Stores the fetched property details
@@ -83,7 +81,7 @@ const propertySlice = createSlice({
         state.errorDetails = action.payload;
       })
       // Handle fetchSimilarListings
-   /*   .addCase(fetchSimilarListings.pending, (state) => {
+      .addCase(fetchSimilarListings.pending, (state) => {
         state.isLoadingSimilarListings = true;
         state.errorSimilarListings = null;
       })
@@ -95,7 +93,6 @@ const propertySlice = createSlice({
         state.isLoadingSimilarListings = false;
         state.errorSimilarListings = action.payload;
       });
-      */
   },
 });
 

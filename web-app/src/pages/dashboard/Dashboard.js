@@ -80,7 +80,8 @@ const Dashboard = ({ onSignOut }) => {
                   city: property.city,
                   state: property.state,
                   zip: property.zip_code,
-                  price: property.list_price
+                  property: property,
+                  data: property.list_price
                     ? '$' + `${property.list_price}`
                     : "$1300",
                   text: property.text,
