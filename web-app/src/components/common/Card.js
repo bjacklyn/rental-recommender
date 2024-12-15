@@ -60,7 +60,7 @@ const Button = styled.button`
 `;
 
 const Card = ({ data, onClick }) => {
-  if(data.property){
+  if (data.property) {
     data = data.property;
   }
   const navigate = useNavigate();
@@ -69,43 +69,43 @@ const Card = ({ data, onClick }) => {
     navigate(`/web-app/listing/${data.property_id}`);
   };
 
-  const { primary_photo, title, price, bedrooms, bathrooms,  } = data;
+  const { primary_photo, title, price, bedrooms, bathrooms, } = data;
   console.log(data);
 
-  let calculated_beds = 0, calculated_baths = 0; 
-  if(!isNaN(data.full_baths)){
+  let calculated_beds = 0, calculated_baths = 0;
+  if (!isNaN(data.full_baths)) {
     calculated_baths = data.full_baths;
   }
-  if(!isNaN(data.half_baths)){
-    calculated_baths = calculated_baths + data.half_baths/2;
+  if (!isNaN(data.half_baths)) {
+    calculated_baths = calculated_baths + data.half_baths / 2;
   }
-  if(!isNaN(data.beds)){
+  if (!isNaN(data.beds)) {
     calculated_beds = data.beds;
   }
-  if(calculated_beds < 1){
+  if (calculated_beds < 1) {
     calculated_beds = 1;
   }
-  if(calculated_baths < 1){
+  if (calculated_baths < 1) {
     calculated_baths = 1;
   }
 
   console.log(data)
-  
+
   let priceVal = data.list_price || data.list_price_min || data.list_price_max;
 
   let address_line = data.full_street_line || data.address;
 
   return (
     <CardWrapper onClick={onClick}>
-      <Image src={primary_photo}      onError={({ currentTarget }) => {
-              currentTarget.onerror = null; // prevents looping
-              currentTarget.src="https://cdn.prod.website-files.com/5ec257673687b0d0f7d61e67/60741e003536396624b511fe_owning-empty-house-selling-empty-house-main-image-yes-homebuyers.jpeg";
-            }}
-            alt={title} />
+      <Image src={primary_photo} onError={({ currentTarget }) => {
+        currentTarget.onerror = null; // prevents looping
+        currentTarget.src = "https://cdn.prod.website-files.com/5ec257673687b0d0f7d61e67/60741e003536396624b511fe_owning-empty-house-selling-empty-house-main-image-yes-homebuyers.jpeg";
+      }}
+        alt={title} />
       <Info>
         <Title>{address_line}</Title>
         <Price>{`$${priceVal}`}</Price>
-        <Details>{calculated_beds } Beds • {calculated_baths} Baths</Details>
+        <Details>{calculated_beds} Beds • {calculated_baths} Baths</Details>
         <Button onClick={handleItemClick}>View Details</Button>
       </Info>
     </CardWrapper>
@@ -124,7 +124,7 @@ Card.propTypes = {
 };
 
 Card.defaultProps = {
-  onClick: () => {},
+  onClick: () => { },
 };
 
 export default Card;

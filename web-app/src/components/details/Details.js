@@ -32,7 +32,7 @@ const ViewMoreButton = styled.button`
 
 const Details = ({ property, similarListings, loading }) => {
   const [showAll, setShowAll] = useState(false);
-  if(!property || loading) return <p>Loading property details...</p>;
+  if (!property || loading) return <p>Loading property details...</p>;
 
   const {
     property_id,
@@ -53,26 +53,26 @@ const Details = ({ property, similarListings, loading }) => {
   } = property;
 
 
-  let calculated_beds = 0, calculated_baths = 0, calculated_sqft = 1533; 
-  if(!isNaN(property.full_baths)){
+  let calculated_beds = 0, calculated_baths = 0, calculated_sqft = 1533;
+  if (!isNaN(property.full_baths)) {
     calculated_baths = property.full_baths;
   }
-  if(!isNaN(property.half_baths)){
-    calculated_baths = calculated_baths + property.half_baths/2;
+  if (!isNaN(property.half_baths)) {
+    calculated_baths = calculated_baths + property.half_baths / 2;
   }
-  if(!isNaN(property.beds)){
+  if (!isNaN(property.beds)) {
     calculated_beds = property.beds;
   }
-  if(calculated_beds < 1){
+  if (calculated_beds < 1) {
     calculated_beds = 1;
   }
-  if(calculated_baths < 1){
+  if (calculated_baths < 1) {
     calculated_baths = 1;
   }
-  if(!isNaN(property.sqft)){
+  if (!isNaN(property.sqft)) {
     calculated_sqft = property.sqft;
   }
-  
+
   let priceVal = property.list_price || property.list_price_min || property.list_price_max;
 
   let address_line = property.full_street_line || property.address;
@@ -97,7 +97,7 @@ const Details = ({ property, similarListings, loading }) => {
             src={primary_photo}
             onError={({ currentTarget }) => {
               currentTarget.onerror = null; // prevents looping
-              currentTarget.src="https://cdn.prod.website-files.com/5ec257673687b0d0f7d61e67/60741e003536396624b511fe_owning-empty-house-selling-empty-house-main-image-yes-homebuyers.jpeg";
+              currentTarget.src = "https://cdn.prod.website-files.com/5ec257673687b0d0f7d61e67/60741e003536396624b511fe_owning-empty-house-selling-empty-house-main-image-yes-homebuyers.jpeg'";
             }}
             alt="Property"
             style={{
