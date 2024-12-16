@@ -1,15 +1,5 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from prometheus_fastapi_instrumentator import Instrumentator
-from opentelemetry import trace
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.pymongo import PymongoInstrumentor
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-from opentelemetry.sdk.logs import LoggerProvider
-from opentelemetry.sdk.logs.export import BatchLogProcessor, OTLPLogExporter
 from typing import Optional
 from dotenv import load_dotenv
 from models import PropertyResponse, PropertyQueryParams, PropertyIDs, PropertiesResponse
@@ -34,45 +24,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Enable/Disable Features
-ENABLE_TRACING = os.getenv("ENABLE_TRACING", "false").lower() == "true"
-ENABLE_PROMETHEUS = os.getenv("ENABLE_PROMETHEUS", "false").lower() == "true"
-ENABLE_LOGGING = os.getenv("ENABLE_LOGGING", "false").lower() == "true"
-
-# Logging Configuration
-if ENABLE_LOGGING:
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-    logger.info("Logging is enabled.")
-else:
-    logger = None
-
-# Tracing Configuration
-if ENABLE_TRACING:
-    resource = Resource(attributes={SERVICE_NAME: "fastapi-housing-service"})
-    tracer_provider = TracerProvider(resource=resource)
-    trace.set_tracer_provider(tracer_provider)
-
-    span_processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True))
-    tracer_provider.add_span_processor(span_processor)
-
-    FastAPIInstrumentor.instrument_app(app)
-    PymongoInstrumentor().instrument()
-    if logger:
-        logger.info("Tracing is enabled.")
-else:
-    if logger:
-        logger.info("Tracing is disabled.")
-
-# Prometheus Metrics
-if ENABLE_PROMETHEUS:
-    Instrumentator().instrument(app).expose(app)
-    if logger:
-        logger.info("Prometheus metrics are enabled.")
-else:
-    if logger:
-        logger.info("Prometheus metrics are disabled.")
 
 # Function to build MongoDB query
 def build_query(params: PropertyQueryParams):
