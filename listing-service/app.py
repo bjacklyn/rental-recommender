@@ -70,12 +70,8 @@ async def get_properties_by_ids(property_ids: PropertyIDs):
 async def get_filtered_properties(
     params: PropertyQueryParams = Depends(), authorization: Optional[str] = Header(None)
 ):
-    if logger:
-        logger.info(f"Received Query Parameters: {params}")
-    query = build_query(params)
-    if logger:
-        logger.info(f"Constructed MongoDB Query: {query}")
 
+    query = build_query(params)
     properties = []
     try:
         pipeline = [
@@ -96,7 +92,5 @@ async def get_filtered_properties(
         if not properties:
             return PropertiesResponse(properties=[])
     except Exception as e:
-        if logger:
-            logger.error(f"Error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal server error occurred.")
     return PropertiesResponse(properties=properties)
